@@ -10,7 +10,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Clipboard;
 import java.util.*;
 
-public class TabelaNominal extends JFrame {
+public class Teste extends JFrame {
     // Split panes para controle dinâmico dos painéis
     private JSplitPane splitHorizontal;
     private JSplitPane splitVertical;
@@ -48,7 +48,7 @@ public class TabelaNominal extends JFrame {
                     e.printStackTrace();
                 }
 
-                new TabelaNominal().setVisible(true);
+                new Teste().setVisible(true);
             }
         });
     }
@@ -104,7 +104,7 @@ public class TabelaNominal extends JFrame {
         scrollPane.getViewport().setBackground(COR_PAINEL);
     }
 
-    public TabelaNominal() {
+    public Teste() {
         aplicarTemaComponentes();
         inicializarInterface();
         dadosOriginais = new ArrayList<>();
