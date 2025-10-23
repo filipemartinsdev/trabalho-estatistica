@@ -36,7 +36,7 @@ public class TabelaNominal extends JFrame {
     private static final Color COR_TEXTO_TOTAL = Color.WHITE;
 
     public static void main(String[] args) {
-        System.out.println("CALCULADORA - TEMA CLARO");
+        System.out.println("[OK] Calculadora estatistica - v2.0");
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
