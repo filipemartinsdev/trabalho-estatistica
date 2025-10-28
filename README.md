@@ -25,7 +25,7 @@ Amostragem de resultados em tabela e gráfico de barras.
 
 ## Como executar
 1. `git clone https://github.com/filipemartinsdev/facul-estatistica.git`
-2. `cd facul-estatistica`
+2. `cd facul-com.estatistica`
 3. `java src/TabelaNominal.java`
 
 ### ⚠️ Observação ⚠ 
