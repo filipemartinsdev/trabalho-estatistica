@@ -10,6 +10,11 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Clipboard;
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
+import java.io.File;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.util.*;
 
 public class TabelaNominal extends JFrame {
@@ -87,7 +92,7 @@ public class TabelaNominal extends JFrame {
     private JTextField tituloGraficoField;
     private JTextField descricaoYField;
     private JTextField descricaoXField;
-    private JButton btnCalcular, btnLimpar, btnExemplo, btnGraficoFi, btnGraficoFr, btnCopiarTabela;
+    private JButton btnCalcular, btnLimpar, btnExemplo, btnGraficoFi, btnGraficoFr, btnCopiarTabela, btnExportarGrafico;
     private JCheckBox checkOrdenar;
 
     // Controle de estado
@@ -273,6 +278,17 @@ public class TabelaNominal extends JFrame {
             }
         });
         painelControles.add(btnGraficoFr);
+
+        // Botão para exportar gráfico
+        btnExportarGrafico = new JButton("💾 Exportar Gráfico");
+        estilizarBotao(btnExportarGrafico);
+        btnExportarGrafico.setEnabled(false);
+        btnExportarGrafico.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                painelGrafico.exportarGrafico();
+            }
+        });
+        painelControles.add(btnExportarGrafico);
 
         // Botao para carregar exemplo
         btnExemplo = new JButton("📝 Carregar Exemplo");
@@ -716,6 +732,7 @@ public class TabelaNominal extends JFrame {
             if (splitHorizontal.getDividerLocation() < 10) {
                 splitHorizontal.setDividerLocation(600);
             }
+            btnExportarGrafico.setEnabled(true);
             JOptionPane.showMessageDialog(this,
                     "Gráfico de Frequência Absoluta (Fi) gerado com sucesso!",
                     "Gráfico Fi", JOptionPane.INFORMATION_MESSAGE);
@@ -739,6 +756,7 @@ public class TabelaNominal extends JFrame {
             if (splitHorizontal.getDividerLocation() < 10) {
                 splitHorizontal.setDividerLocation(600);
             }
+            btnExportarGrafico.setEnabled(true);
             JOptionPane.showMessageDialog(this,
                     "Gráfico de Frequência Relativa (Fr) gerado com sucesso!",
                     "Gráfico Fr", JOptionPane.INFORMATION_MESSAGE);
@@ -778,6 +796,7 @@ public class TabelaNominal extends JFrame {
         btnGraficoFi.setEnabled(false);
         btnGraficoFr.setEnabled(false);
         btnCopiarTabela.setEnabled(false);
+        btnExportarGrafico.setEnabled(false);
         painelGrafico.limparGrafico();
         painelGrafico.repaint();
     }
@@ -1050,6 +1069,61 @@ public class TabelaNominal extends JFrame {
             // Legenda de cores
             if (categorias.length <= 8) {
                 desenharLegenda(g2d);
+            }
+        }
+
+        public void exportarGrafico() {
+            if (!temTipoGrafico() || categorias == null || categorias.length == 0) {
+                JOptionPane.showMessageDialog(this,
+                    "Primeiro gere um gráfico para poder exportá-lo!",
+                    "Erro ao Exportar", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            JFileChooser fileChooser = new JFileChooser();
+            FileFilter filtro = new FileNameExtensionFilter("Imagens PNG (*.png)", "png");
+            fileChooser.setFileFilter(filtro);
+            fileChooser.setSelectedFile(new File("grafico_estatistica.png"));
+
+            if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+                File arquivo = fileChooser.getSelectedFile();
+                // Adicionar extensão .png se não foi especificada
+                if (!arquivo.getName().toLowerCase().endsWith(".png")) {
+                    arquivo = new File(arquivo.getParentFile(), arquivo.getName() + ".png");
+                }
+
+                try {
+                    // Criar imagem com as dimensões atuais do painel
+                    BufferedImage imagem = new BufferedImage(getWidth(), getHeight(), 
+                            BufferedImage.TYPE_INT_ARGB);
+                    Graphics2D g2d = imagem.createGraphics();
+                    
+                    // Configurar rendering hints para melhor qualidade
+                    g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
+                            RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, 
+                            RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                    g2d.setRenderingHint(RenderingHints.KEY_RENDERING, 
+                            RenderingHints.VALUE_RENDER_QUALITY);
+
+                    // Pintar fundo branco
+                    g2d.setColor(Color.WHITE);
+                    g2d.fillRect(0, 0, getWidth(), getHeight());
+                    
+                    // Pintar o gráfico
+                    paint(g2d);
+                    g2d.dispose();
+
+                    // Salvar imagem
+                    ImageIO.write(imagem, "png", arquivo);
+                    JOptionPane.showMessageDialog(this,
+                        "Gráfico exportado com sucesso para:\n" + arquivo.getPath(),
+                        "Exportação Concluída", JOptionPane.INFORMATION_MESSAGE);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this,
+                        "Erro ao exportar gráfico: " + ex.getMessage(),
+                        "Erro", JOptionPane.ERROR_MESSAGE);
+                }
             }
         }
 
