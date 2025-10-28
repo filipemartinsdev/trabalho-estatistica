@@ -24,8 +24,8 @@ Amostragem de resultados em tabela e gráfico de barras.
 - Git
 
 ## Como executar
-1. `git clone https://github.com/filipemartinsdev/facul-estatistica.git`
-2. `cd facul-estatistica`
+1. `git clone https://github.com/filipemartinsdev/trabalho-estatistica.git`
+2. `cd trabalho-estatistica`
 3. `java -jar target/trabalho-estatistica-1.0.jar`
 
 ### To Do List
