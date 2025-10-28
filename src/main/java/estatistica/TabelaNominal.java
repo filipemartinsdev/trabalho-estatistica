@@ -55,7 +55,11 @@ public class TabelaNominal extends JFrame {
                     e.printStackTrace();
                 }
 
-                new TabelaNominal().setVisible(true);
+                 TabelaNominal t = new TabelaNominal();
+                t.setVisible(true);
+//                t.setIconImage(new ImageIcon("./icon.png").getImage());
+                t.setIconImage(new ImageIcon("./icon.png").getImage());
+
             }
         });
     }
@@ -220,21 +224,21 @@ public class TabelaNominal extends JFrame {
                 BorderFactory.createEmptyBorder(5, 5, 5, 5)
         ));
 
-    JScrollPane scrollInput = new JScrollPane(inputDados);
-    scrollInput.getViewport().setBackground(COR_PAINEL);
+        JScrollPane scrollInput = new JScrollPane(inputDados);
+        scrollInput.getViewport().setBackground(COR_PAINEL);
 
-    // Painel esquerdo (input + controles)
-    JPanel leftPanel = new JPanel(new BorderLayout());
-    leftPanel.setBackground(COR_FUNDO);
-    leftPanel.add(scrollInput, BorderLayout.CENTER);
+        // Painel esquerdo (input + controles)
+        JPanel leftPanel = new JPanel(new BorderLayout());
+        leftPanel.setBackground(COR_FUNDO);
+        leftPanel.add(scrollInput, BorderLayout.CENTER);
 
-    // Painel de controles
-    JPanel painelControles = new JPanel(new FlowLayout());
-    painelControles.setBackground(COR_FUNDO);
+        // Painel de controles
+        JPanel painelControles = new JPanel(new FlowLayout());
+        painelControles.setBackground(COR_FUNDO);
 
-    checkOrdenar = new JCheckBox("Ordenar por Frequência", false);
-    estilizarCheckbox(checkOrdenar);
-    painelControles.add(checkOrdenar);
+        checkOrdenar = new JCheckBox("Ordenar por Frequência", false);
+        estilizarCheckbox(checkOrdenar);
+        painelControles.add(checkOrdenar);
 
         // Botão: Copiar Tabela para Excel
         btnCopiarTabela = new JButton("📋 Copiar Tabela");
