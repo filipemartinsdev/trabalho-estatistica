@@ -12,7 +12,7 @@ Análise estatística de qualquer amostra de dados descritivos qualitativos, inc
 - Fr ac - Frequência relativa acumulada
 - Fr(%) ac - Frequência relativa percentual acumulada
 
-Amostragem de resultados em tabela e gráfico de barras.
+Amostragem de resultados em tabela e gráfico de barras, além de possibilidade e exportação de gráfico como imagem.
 
 ## Tecnologias
 - Java 17
@@ -31,6 +31,8 @@ Amostragem de resultados em tabela e gráfico de barras.
 ### To Do List
 - [x] Buildar JAR + Dependências
 - [ ] Buildar Arquivos Executáveis (linux/windows/mac)
+- [ ] Feature: Importação de tebelas (xls/xlsx/csv/ods)
+- [ ] Feature: Modo avançado para edição/inserção de dados
 
 ### ⚠️ Observação ⚠ 
 Código desenvolvido com suporte de **_Inteligência Artifical Generativa_**.
