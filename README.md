@@ -20,18 +20,17 @@ Amostragem de resultados em tabela e gráfico de barras.
 - Git
 
 ## Requisitos
-- Java - JVM 17+
+- Java 17+
 - Git
 
 ## Como executar
 1. `git clone https://github.com/filipemartinsdev/facul-estatistica.git`
-<<<<<<< HEAD
 2. `cd facul-estatistica`
-=======
-2. `cd facul-com.estatistica`
->>>>>>> develop
-3. `java src/TabelaNominal.java`
+3. `java -jar target/trabalho-estatistica-1.0.jar`
+
+### To Do List
+- [x] Buildar JAR + Dependências
+- [ ] Buildar Arquivos Executáveis (linux/windows/mac)
 
 ### ⚠️ Observação ⚠ 
 Código desenvolvido com suporte de **_Inteligência Artifical Generativa_**.
-
