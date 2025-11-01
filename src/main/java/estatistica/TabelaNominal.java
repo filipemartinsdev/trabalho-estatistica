@@ -151,11 +151,33 @@ public class TabelaNominal extends JFrame {
         JPanel painelSuperior = new JPanel(new BorderLayout());
         painelSuperior.setBackground(COR_FUNDO);
 
+        // Botão de menu à esquerda (melhor visibilidade)
+        JButton btnMenu = new JButton("≡");
+        btnMenu.setFont(new Font("Arial", Font.BOLD, 18));
+        btnMenu.setPreferredSize(new Dimension(36, 28));
+        btnMenu.setFocusPainted(false);
+        btnMenu.setBackground(new Color(230, 230, 230));
+        btnMenu.setForeground(COR_TEXTO);
+        btnMenu.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(COR_BORDA, 1),
+            BorderFactory.createEmptyBorder(2, 8, 2, 8)));
+        btnMenu.setToolTipText("Menu");
+        btnMenu.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                btnMenu.setBackground(new Color(210, 210, 210));
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                btnMenu.setBackground(new Color(230, 230, 230));
+            }
+        });
+        JPanel painelMenu = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
+        painelMenu.setOpaque(false);
+        painelMenu.add(btnMenu);
+        painelSuperior.add(painelMenu, BorderLayout.WEST);
+
+        // Painel central (botões principais)
         JPanel painelEsquerda = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
         painelEsquerda.setOpaque(false);
-        checkOrdenar = new JCheckBox("Ordenar por Frequência", false);
-        estilizarCheckbox(checkOrdenar);
-        painelEsquerda.add(checkOrdenar);
         btnCopiarTabela = new JButton("📋 Copiar Tabela");
         estilizarBotaoCopiar(btnCopiarTabela);
         btnCopiarTabela.setEnabled(false);
@@ -165,7 +187,7 @@ public class TabelaNominal extends JFrame {
             }
         });
         painelEsquerda.add(btnCopiarTabela);
-        btnGraficoFi = new JButton("� Gráfico Fi");
+        btnGraficoFi = new JButton("📈 Gráfico Fi");
         estilizarBotao(btnGraficoFi);
         btnGraficoFi.setEnabled(false);
         btnGraficoFi.addActionListener(new ActionListener() {
@@ -174,7 +196,7 @@ public class TabelaNominal extends JFrame {
             }
         });
         painelEsquerda.add(btnGraficoFi);
-        btnGraficoFr = new JButton("� Gráfico Fr");
+        btnGraficoFr = new JButton("📉 Gráfico Fr");
         estilizarBotao(btnGraficoFr);
         btnGraficoFr.setEnabled(false);
         btnGraficoFr.addActionListener(new ActionListener() {
@@ -183,7 +205,7 @@ public class TabelaNominal extends JFrame {
             }
         });
         painelEsquerda.add(btnGraficoFr);
-        btnExportarGrafico = new JButton("� Exportar Gráfico");
+        btnExportarGrafico = new JButton("💾 Exportar Gráfico");
         estilizarBotao(btnExportarGrafico);
         btnExportarGrafico.setEnabled(false);
         btnExportarGrafico.addActionListener(new ActionListener() {
@@ -192,10 +214,15 @@ public class TabelaNominal extends JFrame {
             }
         });
         painelEsquerda.add(btnExportarGrafico);
+        painelSuperior.add(painelEsquerda, BorderLayout.CENTER);
 
+        // Painel direita (checkbox primeiro, depois botões)
         JPanel painelDireita = new JPanel(new FlowLayout(FlowLayout.RIGHT, 2, 2));
         painelDireita.setOpaque(false);
-        btnCalcular = new JButton("📊 Calcular Tabela");
+        checkOrdenar = new JCheckBox("Ordenar por Frequência", false);
+        estilizarCheckbox(checkOrdenar);
+        painelDireita.add(checkOrdenar);
+        btnCalcular = new JButton("📊 Calcular");
         estilizarBotao(btnCalcular);
         btnCalcular.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -219,8 +246,6 @@ public class TabelaNominal extends JFrame {
             }
         });
         painelDireita.add(btnLimpar);
-
-        painelSuperior.add(painelEsquerda, BorderLayout.CENTER);
         painelSuperior.add(painelDireita, BorderLayout.EAST);
 
         // Painel superior - Entrada de dados
@@ -335,40 +360,50 @@ public class TabelaNominal extends JFrame {
 
     // Painel de configurações (lado direito da entrada)
     JPanel painelConfiguracoes = new JPanel();
+
     painelConfiguracoes.setLayout(new GridBagLayout());
     painelConfiguracoes.setBackground(COR_PAINEL);
     painelConfiguracoes.setBorder(BorderFactory.createTitledBorder(
         BorderFactory.createLineBorder(COR_BORDA),
         "Configurações do Gráfico",
-        TitledBorder.CENTER, TitledBorder.TOP, new Font("Arial", Font.BOLD, 12), COR_TEXTO
+        TitledBorder.CENTER, TitledBorder.TOP, new Font("Arial", Font.BOLD, 10), COR_TEXTO
     ));
 
     GridBagConstraints gbc = new GridBagConstraints();
-    gbc.insets = new Insets(6, 6, 6, 6);
+    gbc.insets = new Insets(2, 4, 2, 4); // padding menor
     gbc.fill = GridBagConstraints.HORIZONTAL;
     gbc.gridx = 0; gbc.gridy = 0;
-    painelConfiguracoes.add(new JLabel("Título do gráfico"), gbc);
+    JLabel labelTitulo = new JLabel("Título do gráfico");
+    labelTitulo.setFont(new Font("Arial", Font.PLAIN, 10));
+    painelConfiguracoes.add(labelTitulo, gbc);
 
     tituloGraficoField = new JTextField();
-    tituloGraficoField.setColumns(20);
+    tituloGraficoField.setColumns(16);
+    tituloGraficoField.setFont(new Font("Arial", Font.PLAIN, 10));
     tituloGraficoField.setBackground(COR_PAINEL);
     gbc.gridx = 0; gbc.gridy = 1;
     painelConfiguracoes.add(tituloGraficoField, gbc);
 
     gbc.gridx = 0; gbc.gridy = 2;
-    painelConfiguracoes.add(new JLabel("Descrição eixo Y"), gbc);
+    JLabel labelY = new JLabel("Descrição eixo Y");
+    labelY.setFont(new Font("Arial", Font.PLAIN, 10));
+    painelConfiguracoes.add(labelY, gbc);
 
     descricaoYField = new JTextField();
-    descricaoYField.setColumns(20);
+    descricaoYField.setColumns(16);
+    descricaoYField.setFont(new Font("Arial", Font.PLAIN, 10));
     descricaoYField.setBackground(COR_PAINEL);
     gbc.gridx = 0; gbc.gridy = 3;
     painelConfiguracoes.add(descricaoYField, gbc);
 
     gbc.gridx = 0; gbc.gridy = 4;
-    painelConfiguracoes.add(new JLabel("Descrição eixo X"), gbc);
+    JLabel labelX = new JLabel("Descrição eixo X");
+    labelX.setFont(new Font("Arial", Font.PLAIN, 10));
+    painelConfiguracoes.add(labelX, gbc);
 
     descricaoXField = new JTextField();
-    descricaoXField.setColumns(20);
+    descricaoXField.setColumns(16);
+    descricaoXField.setFont(new Font("Arial", Font.PLAIN, 10));
     descricaoXField.setBackground(COR_PAINEL);
     gbc.gridx = 0; gbc.gridy = 5;
     painelConfiguracoes.add(descricaoXField, gbc);
