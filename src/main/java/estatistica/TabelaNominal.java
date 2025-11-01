@@ -46,14 +46,11 @@ public class TabelaNominal extends JFrame {
     private JTextField tituloGraficoField;
     private JTextField descricaoYField;
     private JTextField descricaoXField;
-    private JButton btnCalcular, btnLimpar, btnExemplo, btnGraficoFi, btnGraficoFr, btnCopiarTabela, btnExportarGrafico;
+    private JButton btnCalcular, btnLimpar, btnExemplo, btnGraficoFi, btnGraficoFr, btnExportarGrafico;
     private JCheckBox checkOrdenar;
     private boolean tabelaCalculada = false;
 
-    // Modularização: lógica de tabela e estatísticas
     private TabelaFrequencia tabelaFrequencia = new TabelaFrequencia();
-
-    // ...existing code...
 
     public static void main(String[] args) {
         System.out.println("[OK] Calculadora com.estatistica - v2.0");
@@ -77,7 +74,6 @@ public class TabelaNominal extends JFrame {
         });
     }
 
-    // Método para aplicar tema claro em todos os componentes
     private static void aplicarTemaClaro() {
         UIManager.put("Panel.background", COR_FUNDO);
         UIManager.put("Frame.background", COR_FUNDO);
@@ -98,22 +94,6 @@ public class TabelaNominal extends JFrame {
         UIManager.put("ScrollPane.border", BorderFactory.createLineBorder(COR_BORDA));
         UIManager.put("Viewport.background", COR_PAINEL);
     }
-
-    // Componentes da interface
-//    private JTextArea inputDados;
-//    private JPanel painelTabelaContainer; // Novo: Container da tabela customizada
-//    private JTextArea outputEstatisticas; // Novo: Área separada para estatísticas
-//    private PainelGraficoNominal painelGrafico;
-//    private JScrollPane scrollGrafico;
-//    // Campos de configuração do gráfico (painel de configurações)
-//    private JTextField tituloGraficoField;
-//    private JTextField descricaoYField;
-//    private JTextField descricaoXField;
-//    private JButton btnCalcular, btnLimpar, btnExemplo, btnGraficoFi, btnGraficoFr, btnCopiarTabela, btnExportarGrafico;
-//    private JCheckBox checkOrdenar;
-
-    // Controle de estado
-//    private boolean tabelaCalculada = false;
 
     // Dados estatísticos
     private ArrayList<String> dadosOriginais;
@@ -202,15 +182,17 @@ public class TabelaNominal extends JFrame {
         // Painel central (botões principais)
         JPanel painelEsquerda = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
         painelEsquerda.setOpaque(false);
-        btnCopiarTabela = new JButton("📋 Copiar Tabela");
-        estilizarBotaoCopiar(btnCopiarTabela);
-        btnCopiarTabela.setEnabled(false);
-        btnCopiarTabela.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                copiarTabelaParaExcel();
-            }
-        });
-        painelEsquerda.add(btnCopiarTabela);
+
+//        btnCopiarTabela = new JButton("📋 Copiar Tabela");
+//        estilizarBotaoCopiar(btnCopiarTabela);
+//        btnCopiarTabela.setEnabled(false);
+//        btnCopiarTabela.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent e) {
+//                copiarTabelaParaExcel();
+//            }
+//        });
+//        painelEsquerda.add(btnCopiarTabela);
+
         btnGraficoFi = new JButton("📈 Gráfico Fi");
         estilizarBotao(btnGraficoFi);
         btnGraficoFi.setEnabled(false);
@@ -511,7 +493,7 @@ public class TabelaNominal extends JFrame {
             tabelaCalculada = true;
             btnGraficoFi.setEnabled(true);
             btnGraficoFr.setEnabled(true);
-            btnCopiarTabela.setEnabled(true);
+//            btnCopiarTabela.setEnabled(true);
             if (splitHorizontal.getRightComponent() == scrollGrafico && painelGrafico.temTipoGrafico()) {
                 painelGrafico.repaint();
             } else {
@@ -634,7 +616,6 @@ public class TabelaNominal extends JFrame {
         outputEstatisticas.setText(texto);
     }
 
-    // MÉTODO COPIAR TABELA MODULARIZADO
     private void copiarTabelaParaExcel() {
         if (!tabelaCalculada) {
             mostrarErro("Primeiro calcule a tabela para poder copiar!");
@@ -782,7 +763,7 @@ public class TabelaNominal extends JFrame {
         tabelaCalculada = false;
         btnGraficoFi.setEnabled(false);
         btnGraficoFr.setEnabled(false);
-        btnCopiarTabela.setEnabled(false);
+//        btnCopiarTabela.setEnabled(false);
         btnExportarGrafico.setEnabled(false);
         painelGrafico.limparGrafico();
         painelGrafico.repaint();
