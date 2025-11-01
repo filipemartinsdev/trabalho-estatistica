@@ -9,8 +9,5 @@
         <module name="trabalho-estatistica" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="trabalho-estatistica" target="17" />
-    </bytecodeTargetLevel>
   </component>
 </project>

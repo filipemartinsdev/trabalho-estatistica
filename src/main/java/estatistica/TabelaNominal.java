@@ -56,10 +56,10 @@ public class TabelaNominal extends JFrame {
                 }
 
                  TabelaNominal t = new TabelaNominal();
-                t.setVisible(true);
 //                t.setIconImage(new ImageIcon("./icon.png").getImage());
                 t.setIconImage(new ImageIcon("./icon.png").getImage());
 
+                t.setVisible(true);
             }
         });
     }
