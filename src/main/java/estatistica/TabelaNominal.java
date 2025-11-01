@@ -42,7 +42,7 @@ public class TabelaNominal extends JFrame {
     private JTextField tituloGraficoField;
     private JTextField descricaoYField;
     private JTextField descricaoXField;
-    private JButton btnCalcular, btnLimpar, btnExemplo, btnGraficoFi, btnGraficoFr;
+    private JButton btnCalcular, btnLimpar, btnExemplo, btnGeraGrafico;
     private JCheckBox checkOrdenar;
     private boolean tabelaCalculada = false;
 
@@ -179,24 +179,141 @@ public class TabelaNominal extends JFrame {
         JPanel painelEsquerda = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
         painelEsquerda.setOpaque(false);
 
-        btnGraficoFi = new JButton("📈 Gráfico Fi");
-        estilizarBotao(btnGraficoFi);
-        btnGraficoFi.setEnabled(false);
-        btnGraficoFi.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                gerarGraficoFi();
+        // Novo botão que abre popup com as opções de gráfico
+        btnGeraGrafico = new JButton("📊 Gerar gráfico ▾");
+        estilizarBotao(btnGeraGrafico);
+        btnGeraGrafico.setEnabled(false);
+        // Criar popup com duas opções: Frequência Absoluta (Fi) e Frequência Relativa Percentual (Fr)
+        JPopupMenu popupGrafico = new JPopupMenu();
+        JMenuItem itemFi = new JMenuItem("Frequência Absoluta");
+        itemFi.addActionListener(ev -> gerarGraficoFi());
+        JMenuItem itemFr = new JMenuItem("Frequência Relativa Percentual");
+        itemFr.addActionListener(ev -> gerarGraficoFr());
+        popupGrafico.add(itemFi);
+        popupGrafico.add(itemFr);
+
+        // Controle para mostrar/ocultar por hover com pequenos delays e feedback visual
+        final javax.swing.Timer[] showTimer = new javax.swing.Timer[1];
+        final javax.swing.Timer[] hideTimer = new javax.swing.Timer[1];
+        final boolean[] popupVisible = new boolean[]{false};
+
+        // Ajuste visual inicial (já feito por estilizarBotao) — assegura borda consistente
+        btnGeraGrafico.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(COR_BOTAO.darker()),
+                BorderFactory.createEmptyBorder(2, 6, 2, 6)
+        ));
+
+        btnGeraGrafico.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                // cancelar hide se estiver agendado
+                if (hideTimer[0] != null && hideTimer[0].isRunning()) hideTimer[0].stop();
+                // agendar mostrar popup após pequeno delay (200ms) — evita abrir ao passar rápido
+                showTimer[0] = new javax.swing.Timer(50, ev -> {
+                    if (!btnGeraGrafico.isEnabled()) return;
+                    popupGrafico.show(btnGeraGrafico, 0, btnGeraGrafico.getHeight());
+                    popupVisible[0] = true;
+                });
+                showTimer[0].setRepeats(false);
+                showTimer[0].start();
+
+                // feedback visual mais óbvio: borda mais grossa
+                btnGeraGrafico.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(COR_BOTAO.darker(), 2),
+                        BorderFactory.createEmptyBorder(2, 6, 2, 6)
+                ));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                // cancelar show se ainda não ocorreu
+                if (showTimer[0] != null && showTimer[0].isRunning()) showTimer[0].stop();
+                // agendar esconder popup (400ms) caso o mouse não entre no popup
+                if (hideTimer[0] != null && hideTimer[0].isRunning()) hideTimer[0].stop();
+                hideTimer[0] = new javax.swing.Timer(400, ev -> {
+                    if (!popupVisible[0]) {
+                        // nada para fazer
+                        return;
+                    }
+                    try {
+                        // verificar posição atual do cursor (em coordenadas de tela)
+                        java.awt.Point mousePos = java.awt.MouseInfo.getPointerInfo().getLocation();
+                        // se o popup estiver visível, verificar se o mouse está dentro dos bounds do popup
+                        if (popupGrafico.isShowing()) {
+                            java.awt.Point popupLoc = popupGrafico.getLocationOnScreen();
+                            java.awt.Dimension popupSize = popupGrafico.getSize();
+                            java.awt.Rectangle popupBounds = new java.awt.Rectangle(popupLoc, popupSize);
+                            if (popupBounds.contains(mousePos)) {
+                                // cursor está dentro do popup — não fechar
+                                return;
+                            }
+                        }
+                        // também permitir que o cursor esteja novamente sobre o botão
+                        java.awt.Point btnLoc = btnGeraGrafico.getLocationOnScreen();
+                        java.awt.Dimension btnSize = btnGeraGrafico.getSize();
+                        java.awt.Rectangle btnBounds = new java.awt.Rectangle(btnLoc, btnSize);
+                        if (btnBounds.contains(mousePos)) {
+                            // cursor voltou ao botão — não fechar
+                            return;
+                        }
+                        // caso contrário, fechar o popup
+                        popupGrafico.setVisible(false);
+                        popupVisible[0] = false;
+                    } catch (Exception ex) {
+                        // Em caso de erro ao obter posições na tela, fechar como fallback
+                        popupGrafico.setVisible(false);
+                        popupVisible[0] = false;
+                    }
+                });
+                hideTimer[0].setRepeats(false);
+                hideTimer[0].start();
+
+                // restaurar borda normal
+                btnGeraGrafico.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(COR_BOTAO.darker()),
+                        BorderFactory.createEmptyBorder(2, 6, 2, 6)
+                ));
             }
         });
-        painelEsquerda.add(btnGraficoFi);
-        btnGraficoFr = new JButton("📉 Gráfico Fr");
-        estilizarBotao(btnGraficoFr);
-        btnGraficoFr.setEnabled(false);
-        btnGraficoFr.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                gerarGraficoFr();
+
+        // Listener do popup para controlar estado quando o menu fica visível/invisível
+        popupGrafico.addPopupMenuListener(new javax.swing.event.PopupMenuListener() {
+            @Override
+            public void popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent e) {
+                popupVisible[0] = true;
+                if (hideTimer[0] != null && hideTimer[0].isRunning()) hideTimer[0].stop();
+            }
+
+            @Override
+            public void popupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent e) {
+                popupVisible[0] = false;
+                // restaurar borda quando fechar
+                btnGeraGrafico.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(COR_BOTAO.darker()),
+                        BorderFactory.createEmptyBorder(2, 6, 2, 6)
+                ));
+            }
+
+            @Override
+            public void popupMenuCanceled(javax.swing.event.PopupMenuEvent e) {
+                popupVisible[0] = false;
+                btnGeraGrafico.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(COR_BOTAO.darker()),
+                        BorderFactory.createEmptyBorder(2, 6, 2, 6)
+                ));
             }
         });
-        painelEsquerda.add(btnGraficoFr);
+
+        // Manter também a abertura por clique como fallback (útil para usuários que preferem clicar)
+        btnGeraGrafico.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (!btnGeraGrafico.isEnabled()) return;
+                popupGrafico.show(btnGeraGrafico, 0, btnGeraGrafico.getHeight());
+                popupVisible[0] = true;
+            }
+        });
+
+        painelEsquerda.add(btnGeraGrafico);
         painelSuperior.add(painelEsquerda, BorderLayout.CENTER);
 
         // Painel direita (checkbox primeiro, depois botões)
@@ -468,8 +585,7 @@ public class TabelaNominal extends JFrame {
             criarTabelaCustomizada();
             gerarEstatisticas();
             tabelaCalculada = true;
-            btnGraficoFi.setEnabled(true);
-            btnGraficoFr.setEnabled(true);
+            btnGeraGrafico.setEnabled(true);
 //            btnCopiarTabela.setEnabled(true);
             if (splitHorizontal.getRightComponent() == scrollGrafico && painelGrafico.temTipoGrafico()) {
                 painelGrafico.repaint();
@@ -736,8 +852,7 @@ public class TabelaNominal extends JFrame {
         frequencias.clear();
         checkOrdenar.setSelected(false);
         tabelaCalculada = false;
-        btnGraficoFi.setEnabled(false);
-        btnGraficoFr.setEnabled(false);
+    btnGeraGrafico.setEnabled(false);
         painelGrafico.limparGrafico();
         painelGrafico.repaint();
     }
