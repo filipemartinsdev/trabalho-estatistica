@@ -9,10 +9,6 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.util.*;
-import estatistica.TabelaFrequencia;
-import estatistica.EstatisticasNominais;
-import estatistica.PainelGraficoNominal;
-import estatistica.UtilitariosUI;
 
 public class TabelaNominal extends JFrame {
     // Split panes para controle dinâmico dos painéis
@@ -182,16 +178,6 @@ public class TabelaNominal extends JFrame {
         // Painel central (botões principais)
         JPanel painelEsquerda = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
         painelEsquerda.setOpaque(false);
-
-//        btnCopiarTabela = new JButton("📋 Copiar Tabela");
-//        estilizarBotaoCopiar(btnCopiarTabela);
-//        btnCopiarTabela.setEnabled(false);
-//        btnCopiarTabela.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                copiarTabelaParaExcel();
-//            }
-//        });
-//        painelEsquerda.add(btnCopiarTabela);
 
         btnGraficoFi = new JButton("📈 Gráfico Fi");
         estilizarBotao(btnGraficoFi);
@@ -825,15 +811,16 @@ public class TabelaNominal extends JFrame {
                 if (dado != null && !dado.toString().trim().isEmpty() && qtd != null) {
                     int n = 1;
                     try { n = Integer.parseInt(qtd.toString()); } catch (Exception ex) { n = 1; }
+                    if (sb.length() > 0) sb.append("\n");
                     for (int j = 0; j < n; j++) {
-                        if (sb.length() > 0) sb.append(", ");
+                        if (j > 0) sb.append(", ");
                         sb.append(dado.toString().trim());
                     }
                 }
             }
             if (sb.length() > 0) {
                 String atual = inputDados.getText().trim();
-                if (!atual.isEmpty() && !atual.endsWith(",")) atual += ", ";
+                if (!atual.isEmpty() && !atual.endsWith("\n")) atual += "\n";
                 inputDados.setText(atual + sb.toString());
             }
             dialog.dispose();
