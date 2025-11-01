@@ -146,32 +146,49 @@ public class TabelaNominal extends JFrame {
         setLayout(new BorderLayout());
 
 
-
         // Painel superior de opções (barra de botões) com alinhamento à esquerda e à direita
         JPanel painelSuperior = new JPanel(new BorderLayout());
         painelSuperior.setBackground(COR_FUNDO);
 
-        // Botão de menu à esquerda (melhor visibilidade)
-        JButton btnMenu = new JButton("≡");
-        btnMenu.setFont(new Font("Arial", Font.BOLD, 18));
-        btnMenu.setPreferredSize(new Dimension(36, 28));
+        // Botão de menu à esquerda (menor, cinza, texto 'Menu')
+        JButton btnMenu = new JButton("Menu");
+        btnMenu.setFont(new Font("Arial", Font.BOLD, 12));
+        btnMenu.setPreferredSize(new Dimension(60, 26));
+        btnMenu.setBackground(new Color(200, 200, 200));
+        btnMenu.setForeground(new Color(40, 40, 40));
         btnMenu.setFocusPainted(false);
-        btnMenu.setBackground(new Color(230, 230, 230));
-        btnMenu.setForeground(COR_TEXTO);
-        btnMenu.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(COR_BORDA, 1),
-            BorderFactory.createEmptyBorder(2, 8, 2, 8)));
         btnMenu.setToolTipText("Menu");
-        btnMenu.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
+        btnMenu.setOpaque(true);
+        btnMenu.setBorder(BorderFactory.createLineBorder(new Color(180, 180, 180)));
+        btnMenu.addChangeListener(e -> {
+            ButtonModel model = btnMenu.getModel();
+            if (model.isPressed() || model.isArmed()) {
+                btnMenu.setBackground(new Color(170, 170, 170));
+            } else if (model.isRollover()) {
                 btnMenu.setBackground(new Color(210, 210, 210));
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                btnMenu.setBackground(new Color(230, 230, 230));
+            } else {
+                btnMenu.setBackground(new Color(200, 200, 200));
             }
         });
         JPanel painelMenu = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
         painelMenu.setOpaque(false);
+
+        // Botão Inserir
+        JButton btnInserir = new JButton("Inserir");
+        btnInserir.setFont(new Font("Arial", Font.BOLD, 12));
+        btnInserir.setPreferredSize(new Dimension(70, 26));
+        btnInserir.setBackground(new Color(220, 220, 220));
+        btnInserir.setForeground(new Color(40, 40, 40));
+        btnInserir.setFocusPainted(false);
+        btnInserir.setToolTipText("Inserir dados em lote");
+        btnInserir.setOpaque(true);
+        btnInserir.setBorder(BorderFactory.createLineBorder(new Color(180, 180, 180)));
+        btnInserir.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                abrirDialogInserir();
+            }
+        });
+        painelMenu.add(btnInserir);
         painelMenu.add(btnMenu);
         painelSuperior.add(painelMenu, BorderLayout.WEST);
 
@@ -305,19 +322,19 @@ public class TabelaNominal extends JFrame {
         splitHorizontal.setBackground(COR_FUNDO);
 
 
-    // Painel principal com barra superior
-    JPanel painelPrincipal = new JPanel(new BorderLayout());
-    painelPrincipal.setBackground(COR_FUNDO);
-    painelPrincipal.add(painelSuperior, BorderLayout.NORTH);
-    painelPrincipal.add(painelEntrada, BorderLayout.CENTER);
+        // Painel principal com barra superior
+        JPanel painelPrincipal = new JPanel(new BorderLayout());
+        painelPrincipal.setBackground(COR_FUNDO);
+        painelPrincipal.add(painelSuperior, BorderLayout.NORTH);
+        painelPrincipal.add(painelEntrada, BorderLayout.CENTER);
 
-    // JSplitPane vertical para painel principal e conteúdo principal
-    splitVertical = new JSplitPane(JSplitPane.VERTICAL_SPLIT, painelPrincipal, splitHorizontal);
-    splitVertical.setDividerLocation(180);
-    splitVertical.setResizeWeight(0.0);
-    splitVertical.setOneTouchExpandable(true);
-    splitVertical.setDividerSize(8);
-    splitVertical.setBackground(COR_FUNDO);
+        // JSplitPane vertical para painel principal e conteúdo principal
+        splitVertical = new JSplitPane(JSplitPane.VERTICAL_SPLIT, painelPrincipal, splitHorizontal);
+        splitVertical.setDividerLocation(180);
+        splitVertical.setResizeWeight(0.0);
+        splitVertical.setOneTouchExpandable(true);
+        splitVertical.setDividerSize(8);
+        splitVertical.setBackground(COR_FUNDO);
 
     // Adicionar o JSplitPane principal à janela
     add(splitVertical, BorderLayout.CENTER);
@@ -782,4 +799,73 @@ public class TabelaNominal extends JFrame {
     }
 
     // ... PainelGraficoNominal agora é uma classe modularizada ...
+
+
+    void abrirDialogInserir() {
+        JDialog dialog = new JDialog(this, "Inserir Dados em Lote", true);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dialog.setSize(400, 320);
+        dialog.setLocationRelativeTo(this);
+
+        String[] colunas = {"Dado", "Quantidade"};
+        Object[][] dados = new Object[5][2];
+        JTable tabela = new JTable(new javax.swing.table.DefaultTableModel(dados, colunas) {
+            @Override
+            public boolean isCellEditable(int row, int column) { return true; }
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                return columnIndex == 1 ? Integer.class : String.class;
+            }
+        });
+        tabela.setRowHeight(22);
+        tabela.setFont(new Font("Arial", Font.PLAIN, 12));
+        tabela.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
+        JScrollPane scroll = new JScrollPane(tabela);
+
+        JButton btnAddLinha = new JButton("Adicionar Linha");
+        btnAddLinha.setFont(new Font("Arial", Font.PLAIN, 11));
+        btnAddLinha.addActionListener(ev -> {
+            javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel) tabela.getModel();
+            model.addRow(new Object[]{"", 1});
+        });
+
+        JButton btnConfirmar = new JButton("Confirmar");
+        btnConfirmar.setFont(new Font("Arial", Font.BOLD, 12));
+        btnConfirmar.addActionListener(ev -> {
+            javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel) tabela.getModel();
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < model.getRowCount(); i++) {
+                Object dado = model.getValueAt(i, 0);
+                Object qtd = model.getValueAt(i, 1);
+                if (dado != null && !dado.toString().trim().isEmpty() && qtd != null) {
+                    int n = 1;
+                    try { n = Integer.parseInt(qtd.toString()); } catch (Exception ex) { n = 1; }
+                    for (int j = 0; j < n; j++) {
+                        if (sb.length() > 0) sb.append(", ");
+                        sb.append(dado.toString().trim());
+                    }
+                }
+            }
+            if (sb.length() > 0) {
+                String atual = inputDados.getText().trim();
+                if (!atual.isEmpty() && !atual.endsWith(",")) atual += ", ";
+                inputDados.setText(atual + sb.toString());
+            }
+            dialog.dispose();
+        });
+
+        JButton btnCancelar = new JButton("Cancelar");
+        btnCancelar.setFont(new Font("Arial", Font.PLAIN, 11));
+        btnCancelar.addActionListener(ev -> dialog.dispose());
+
+        JPanel painelBotoes = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        painelBotoes.add(btnAddLinha);
+        painelBotoes.add(btnCancelar);
+        painelBotoes.add(btnConfirmar);
+
+        dialog.setLayout(new BorderLayout());
+        dialog.add(scroll, BorderLayout.CENTER);
+        dialog.add(painelBotoes, BorderLayout.SOUTH);
+        dialog.setVisible(true);
+    }
 }
