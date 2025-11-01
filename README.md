@@ -24,9 +24,18 @@ Amostragem de resultados em tabela e gráfico de barras, além de possibilidade 
 - Git
 
 ## Como executar
-1. `git clone https://github.com/filipemartinsdev/trabalho-estatistica.git`
-2. `cd trabalho-estatistica`
-3. `java -jar target/trabalho-estatistica-1.0.jar`
+
+- Linux
+
+    1. `git clone https://github.com/filipemartinsdev/trabalho-estatistica.git`
+    2. `cd trabalho-estatistica`
+    3. `./init.sh`
+
+- Windows
+
+    1. `git clone https://github.com/filipemartinsdev/trabalho-estatistica.git`
+    2. `cd trabalho-estatistica`
+    3. `./init.bat`
 
 ### To Do List
 - [x] Buildar JAR + Dependências
