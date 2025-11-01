@@ -42,7 +42,7 @@ public class TabelaNominal extends JFrame {
     private JTextField tituloGraficoField;
     private JTextField descricaoYField;
     private JTextField descricaoXField;
-    private JButton btnCalcular, btnLimpar, btnExemplo, btnGraficoFi, btnGraficoFr, btnExportarGrafico;
+    private JButton btnCalcular, btnLimpar, btnExemplo, btnGraficoFi, btnGraficoFr;
     private JCheckBox checkOrdenar;
     private boolean tabelaCalculada = false;
 
@@ -197,15 +197,6 @@ public class TabelaNominal extends JFrame {
             }
         });
         painelEsquerda.add(btnGraficoFr);
-        btnExportarGrafico = new JButton("💾 Exportar Gráfico");
-        estilizarBotao(btnExportarGrafico);
-        btnExportarGrafico.setEnabled(false);
-        btnExportarGrafico.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                painelGrafico.exportarGrafico();
-            }
-        });
-        painelEsquerda.add(btnExportarGrafico);
         painelSuperior.add(painelEsquerda, BorderLayout.CENTER);
 
         // Painel direita (checkbox primeiro, depois botões)
@@ -686,7 +677,6 @@ public class TabelaNominal extends JFrame {
             if (splitHorizontal.getDividerLocation() < 10) {
                 splitHorizontal.setDividerLocation(600);
             }
-            btnExportarGrafico.setEnabled(true);
             JOptionPane.showMessageDialog(this,
                     "Gráfico de Frequência Absoluta (Fi) gerado com sucesso!",
                     "Gráfico Fi", JOptionPane.INFORMATION_MESSAGE);
@@ -710,7 +700,6 @@ public class TabelaNominal extends JFrame {
             if (splitHorizontal.getDividerLocation() < 10) {
                 splitHorizontal.setDividerLocation(600);
             }
-            btnExportarGrafico.setEnabled(true);
             JOptionPane.showMessageDialog(this,
                     "Gráfico de Frequência Relativa (Fr) gerado com sucesso!",
                     "Gráfico Fr", JOptionPane.INFORMATION_MESSAGE);
@@ -749,8 +738,6 @@ public class TabelaNominal extends JFrame {
         tabelaCalculada = false;
         btnGraficoFi.setEnabled(false);
         btnGraficoFr.setEnabled(false);
-//        btnCopiarTabela.setEnabled(false);
-        btnExportarGrafico.setEnabled(false);
         painelGrafico.limparGrafico();
         painelGrafico.repaint();
     }
