@@ -145,6 +145,82 @@ public class TabelaNominal extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
+
+        // Painel superior de opções (barra de botões)
+        JPanel painelSuperior = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        painelSuperior.setBackground(COR_FUNDO);
+
+        checkOrdenar = new JCheckBox("Ordenar por Frequência", false);
+        estilizarCheckbox(checkOrdenar);
+        painelSuperior.add(checkOrdenar);
+
+        btnCopiarTabela = new JButton("📋 Copiar Tabela");
+        estilizarBotaoCopiar(btnCopiarTabela);
+        btnCopiarTabela.setEnabled(false);
+        btnCopiarTabela.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                copiarTabelaParaExcel();
+            }
+        });
+        painelSuperior.add(btnCopiarTabela);
+
+        btnCalcular = new JButton("📊 Calcular Tabela");
+        estilizarBotao(btnCalcular);
+        btnCalcular.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                calcularTabela();
+            }
+        });
+        painelSuperior.add(btnCalcular);
+
+        btnGraficoFi = new JButton("📈 Gráfico Fi");
+        estilizarBotao(btnGraficoFi);
+        btnGraficoFi.setEnabled(false);
+        btnGraficoFi.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                gerarGraficoFi();
+            }
+        });
+        painelSuperior.add(btnGraficoFi);
+
+        btnGraficoFr = new JButton("📉 Gráfico Fr");
+        estilizarBotao(btnGraficoFr);
+        btnGraficoFr.setEnabled(false);
+        btnGraficoFr.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                gerarGraficoFr();
+            }
+        });
+        painelSuperior.add(btnGraficoFr);
+
+        btnExportarGrafico = new JButton("💾 Exportar Gráfico");
+        estilizarBotao(btnExportarGrafico);
+        btnExportarGrafico.setEnabled(false);
+        btnExportarGrafico.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                painelGrafico.exportarGrafico();
+            }
+        });
+        painelSuperior.add(btnExportarGrafico);
+
+        btnExemplo = new JButton("📝 Carregar Exemplo");
+        estilizarBotao(btnExemplo, COR_CINZA);
+        btnExemplo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                carregarExemplo();
+            }
+        });
+        painelSuperior.add(btnExemplo);
+
+        btnLimpar = new JButton("🗑️ Limpar");
+        estilizarBotao(btnLimpar, COR_VERMELHO);
+        btnLimpar.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                limparTudo();
+            }
+        });
+        painelSuperior.add(btnLimpar);
+
         // Painel superior - Entrada de dados
         JPanel painelEntrada = criarPainelEntrada();
 
@@ -201,16 +277,23 @@ public class TabelaNominal extends JFrame {
         splitHorizontal.setDividerSize(8);
         splitHorizontal.setBackground(COR_FUNDO);
 
-        // JSplitPane vertical para entrada de dados e conteúdo principal
-        splitVertical = new JSplitPane(JSplitPane.VERTICAL_SPLIT, painelEntrada, splitHorizontal);
-        splitVertical.setDividerLocation(180);
-        splitVertical.setResizeWeight(0.0);
-        splitVertical.setOneTouchExpandable(true);
-        splitVertical.setDividerSize(8);
-        splitVertical.setBackground(COR_FUNDO);
 
-        // Adicionar o JSplitPane principal à janela
-        add(splitVertical, BorderLayout.CENTER);
+    // Painel principal com barra superior
+    JPanel painelPrincipal = new JPanel(new BorderLayout());
+    painelPrincipal.setBackground(COR_FUNDO);
+    painelPrincipal.add(painelSuperior, BorderLayout.NORTH);
+    painelPrincipal.add(painelEntrada, BorderLayout.CENTER);
+
+    // JSplitPane vertical para painel principal e conteúdo principal
+    splitVertical = new JSplitPane(JSplitPane.VERTICAL_SPLIT, painelPrincipal, splitHorizontal);
+    splitVertical.setDividerLocation(180);
+    splitVertical.setResizeWeight(0.0);
+    splitVertical.setOneTouchExpandable(true);
+    splitVertical.setDividerSize(8);
+    splitVertical.setBackground(COR_FUNDO);
+
+    // Adicionar o JSplitPane principal à janela
+    add(splitVertical, BorderLayout.CENTER);
 
         // Configurações da janela
         setSize(1200, 700);
@@ -245,89 +328,8 @@ public class TabelaNominal extends JFrame {
         leftPanel.setBackground(COR_FUNDO);
         leftPanel.add(scrollInput, BorderLayout.CENTER);
 
-        // Painel de controles
-        JPanel painelControles = new JPanel(new FlowLayout());
-        painelControles.setBackground(COR_FUNDO);
-
-        checkOrdenar = new JCheckBox("Ordenar por Frequência", false);
-        estilizarCheckbox(checkOrdenar);
-        painelControles.add(checkOrdenar);
-
-        // Botão: Copiar Tabela para Excel
-        btnCopiarTabela = new JButton("📋 Copiar Tabela");
-        estilizarBotaoCopiar(btnCopiarTabela);
-        btnCopiarTabela.setEnabled(false);
-        btnCopiarTabela.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                copiarTabelaParaExcel();
-            }
-        });
-        painelControles.add(btnCopiarTabela);
-
-        // Botão para calcular apenas a tabela
-        btnCalcular = new JButton("📊 Calcular Tabela");
-        estilizarBotao(btnCalcular);
-        btnCalcular.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                calcularTabela();
-            }
-        });
-        painelControles.add(btnCalcular);
-
-        // Botão para gráfico Fi (Frequência Absoluta)
-        btnGraficoFi = new JButton("📈 Gráfico Fi");
-        estilizarBotao(btnGraficoFi);
-        btnGraficoFi.setEnabled(false);
-        btnGraficoFi.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                gerarGraficoFi();
-            }
-        });
-        painelControles.add(btnGraficoFi);
-
-        // Botão para gráfico Fr (Frequência Relativa)
-        btnGraficoFr = new JButton("📉 Gráfico Fr");
-        estilizarBotao(btnGraficoFr);
-        btnGraficoFr.setEnabled(false);
-        btnGraficoFr.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                gerarGraficoFr();
-            }
-        });
-        painelControles.add(btnGraficoFr);
-
-        // Botão para exportar gráfico
-        btnExportarGrafico = new JButton("💾 Exportar Gráfico");
-        estilizarBotao(btnExportarGrafico);
-        btnExportarGrafico.setEnabled(false);
-        btnExportarGrafico.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                painelGrafico.exportarGrafico();
-            }
-        });
-        painelControles.add(btnExportarGrafico);
-
-        // Botao para carregar exemplo
-        btnExemplo = new JButton("📝 Carregar Exemplo");
-        estilizarBotao(btnExemplo, COR_CINZA);
-        btnExemplo.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                carregarExemplo();
-            }
-        });
-        painelControles.add(btnExemplo);
-
-        // Botao para limpar
-        btnLimpar = new JButton("🗑️ Limpar");
-        estilizarBotao(btnLimpar, COR_VERMELHO);
-        btnLimpar.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                limparTudo();
-            }
-        });
-        painelControles.add(btnLimpar);
-
-    leftPanel.add(painelControles, BorderLayout.SOUTH);
+        // Remove painel de controles do painel de entrada (agora está no painel superior)
+        // ...existing code...
 
     // Painel de configurações (lado direito da entrada)
     JPanel painelConfiguracoes = new JPanel();
