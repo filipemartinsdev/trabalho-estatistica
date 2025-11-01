@@ -150,16 +150,18 @@ public class TabelaNominal extends JFrame {
         JPanel painelSuperior = new JPanel(new BorderLayout());
         painelSuperior.setBackground(COR_FUNDO);
 
-        // Botão de menu à esquerda (menor, cinza, texto 'Menu')
-        JButton btnMenu = new JButton("Menu");
-        btnMenu.setFont(new Font("Arial", Font.BOLD, 12));
-        btnMenu.setPreferredSize(new Dimension(60, 26));
+        // Botão de menu à esquerda (ícone)
+        JButton btnMenu = new JButton();
+        btnMenu.setFont(new Font("Arial", Font.BOLD, 16));
+        btnMenu.setPreferredSize(new Dimension(34, 26));
         btnMenu.setBackground(new Color(200, 200, 200));
         btnMenu.setForeground(new Color(40, 40, 40));
         btnMenu.setFocusPainted(false);
         btnMenu.setToolTipText("Menu");
         btnMenu.setOpaque(true);
         btnMenu.setBorder(BorderFactory.createLineBorder(new Color(180, 180, 180)));
+        // Ícone de menu simples (três barras)
+        btnMenu.setText("≡");
         btnMenu.addChangeListener(e -> {
             ButtonModel model = btnMenu.getModel();
             if (model.isPressed() || model.isArmed()) {
@@ -170,26 +172,24 @@ public class TabelaNominal extends JFrame {
                 btnMenu.setBackground(new Color(200, 200, 200));
             }
         });
+        // Popup de menu
+        JPopupMenu popupMenu = new JPopupMenu();
+        JMenuItem itemExportar = new JMenuItem("Exportar");
+        itemExportar.addActionListener(ev -> copiarTabelaParaExcel());
+        JMenuItem itemInserir = new JMenuItem("Inserir");
+        itemInserir.addActionListener(ev -> abrirDialogInserir());
+        popupMenu.add(itemExportar);
+        popupMenu.add(itemInserir);
+        btnMenu.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                popupMenu.show(btnMenu, 0, btnMenu.getHeight());
+            }
+        });
         JPanel painelMenu = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
         painelMenu.setOpaque(false);
 
-        // Botão Inserir
-        JButton btnInserir = new JButton("Inserir");
-        btnInserir.setFont(new Font("Arial", Font.BOLD, 12));
-        btnInserir.setPreferredSize(new Dimension(70, 26));
-        btnInserir.setBackground(new Color(220, 220, 220));
-        btnInserir.setForeground(new Color(40, 40, 40));
-        btnInserir.setFocusPainted(false);
-        btnInserir.setToolTipText("Inserir dados em lote");
-        btnInserir.setOpaque(true);
-        btnInserir.setBorder(BorderFactory.createLineBorder(new Color(180, 180, 180)));
-        btnInserir.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                abrirDialogInserir();
-            }
-        });
-        painelMenu.add(btnInserir);
-        painelMenu.add(btnMenu);
+    
+    painelMenu.add(btnMenu);
         painelSuperior.add(painelMenu, BorderLayout.WEST);
 
         // Painel central (botões principais)
@@ -337,7 +337,7 @@ public class TabelaNominal extends JFrame {
         splitVertical.setBackground(COR_FUNDO);
 
     // Adicionar o JSplitPane principal à janela
-    add(splitVertical, BorderLayout.CENTER);
+        add(splitVertical, BorderLayout.CENTER);
 
         // Configurações da janela
         setSize(1200, 700);
@@ -797,9 +797,6 @@ public class TabelaNominal extends JFrame {
     private String getDescricaoX() {
         return (descricaoXField != null && !descricaoXField.getText().trim().isEmpty()) ? descricaoXField.getText().trim() : null;
     }
-
-    // ... PainelGraficoNominal agora é uma classe modularizada ...
-
 
     void abrirDialogInserir() {
         JDialog dialog = new JDialog(this, "Inserir Dados em Lote", true);
