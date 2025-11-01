@@ -146,14 +146,16 @@ public class TabelaNominal extends JFrame {
         setLayout(new BorderLayout());
 
 
-        // Painel superior de opções (barra de botões)
-    JPanel painelSuperior = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
+
+        // Painel superior de opções (barra de botões) com alinhamento à esquerda e à direita
+        JPanel painelSuperior = new JPanel(new BorderLayout());
         painelSuperior.setBackground(COR_FUNDO);
 
+        JPanel painelEsquerda = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
+        painelEsquerda.setOpaque(false);
         checkOrdenar = new JCheckBox("Ordenar por Frequência", false);
         estilizarCheckbox(checkOrdenar);
-        painelSuperior.add(checkOrdenar);
-
+        painelEsquerda.add(checkOrdenar);
         btnCopiarTabela = new JButton("📋 Copiar Tabela");
         estilizarBotaoCopiar(btnCopiarTabela);
         btnCopiarTabela.setEnabled(false);
@@ -162,18 +164,8 @@ public class TabelaNominal extends JFrame {
                 copiarTabelaParaExcel();
             }
         });
-        painelSuperior.add(btnCopiarTabela);
-
-        btnCalcular = new JButton("📊 Calcular Tabela");
-        estilizarBotao(btnCalcular);
-        btnCalcular.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                calcularTabela();
-            }
-        });
-        painelSuperior.add(btnCalcular);
-
-        btnGraficoFi = new JButton("📈 Gráfico Fi");
+        painelEsquerda.add(btnCopiarTabela);
+        btnGraficoFi = new JButton("� Gráfico Fi");
         estilizarBotao(btnGraficoFi);
         btnGraficoFi.setEnabled(false);
         btnGraficoFi.addActionListener(new ActionListener() {
@@ -181,9 +173,8 @@ public class TabelaNominal extends JFrame {
                 gerarGraficoFi();
             }
         });
-        painelSuperior.add(btnGraficoFi);
-
-        btnGraficoFr = new JButton("📉 Gráfico Fr");
+        painelEsquerda.add(btnGraficoFi);
+        btnGraficoFr = new JButton("� Gráfico Fr");
         estilizarBotao(btnGraficoFr);
         btnGraficoFr.setEnabled(false);
         btnGraficoFr.addActionListener(new ActionListener() {
@@ -191,9 +182,8 @@ public class TabelaNominal extends JFrame {
                 gerarGraficoFr();
             }
         });
-        painelSuperior.add(btnGraficoFr);
-
-        btnExportarGrafico = new JButton("💾 Exportar Gráfico");
+        painelEsquerda.add(btnGraficoFr);
+        btnExportarGrafico = new JButton("� Exportar Gráfico");
         estilizarBotao(btnExportarGrafico);
         btnExportarGrafico.setEnabled(false);
         btnExportarGrafico.addActionListener(new ActionListener() {
@@ -201,8 +191,18 @@ public class TabelaNominal extends JFrame {
                 painelGrafico.exportarGrafico();
             }
         });
-        painelSuperior.add(btnExportarGrafico);
+        painelEsquerda.add(btnExportarGrafico);
 
+        JPanel painelDireita = new JPanel(new FlowLayout(FlowLayout.RIGHT, 2, 2));
+        painelDireita.setOpaque(false);
+        btnCalcular = new JButton("📊 Calcular Tabela");
+        estilizarBotao(btnCalcular);
+        btnCalcular.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                calcularTabela();
+            }
+        });
+        painelDireita.add(btnCalcular);
         btnExemplo = new JButton("📝 Carregar Exemplo");
         estilizarBotao(btnExemplo, COR_CINZA);
         btnExemplo.addActionListener(new ActionListener() {
@@ -210,8 +210,7 @@ public class TabelaNominal extends JFrame {
                 carregarExemplo();
             }
         });
-        painelSuperior.add(btnExemplo);
-
+        painelDireita.add(btnExemplo);
         btnLimpar = new JButton("🗑️ Limpar");
         estilizarBotao(btnLimpar, COR_VERMELHO);
         btnLimpar.addActionListener(new ActionListener() {
@@ -219,7 +218,10 @@ public class TabelaNominal extends JFrame {
                 limparTudo();
             }
         });
-        painelSuperior.add(btnLimpar);
+        painelDireita.add(btnLimpar);
+
+        painelSuperior.add(painelEsquerda, BorderLayout.CENTER);
+        painelSuperior.add(painelDireita, BorderLayout.EAST);
 
         // Painel superior - Entrada de dados
         JPanel painelEntrada = criarPainelEntrada();
