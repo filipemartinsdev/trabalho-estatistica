@@ -147,7 +147,7 @@ public class TabelaNominal extends JFrame {
 
 
         // Painel superior de opções (barra de botões)
-        JPanel painelSuperior = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    JPanel painelSuperior = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
         painelSuperior.setBackground(COR_FUNDO);
 
         checkOrdenar = new JCheckBox("Ordenar por Frequência", false);
@@ -384,17 +384,17 @@ public class TabelaNominal extends JFrame {
 
     // Métodos de estilização (mantidos iguais)
     private void estilizarBotao(JButton botao) {
-        estilizarBotao(botao, COR_BOTAO);
+    estilizarBotao(botao, COR_BOTAO);
     }
 
     private void estilizarBotao(JButton botao, Color corFundo) {
-        botao.setFont(new Font("Arial", Font.BOLD, 11));
+        botao.setFont(new Font("Arial", Font.BOLD, 10));
         botao.setBackground(corFundo);
         botao.setForeground(COR_BOTAO_TEXTO);
         botao.setFocusPainted(false);
         botao.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(corFundo.darker()),
-                BorderFactory.createEmptyBorder(4, 8, 4, 8)
+                BorderFactory.createEmptyBorder(2, 6, 2, 6)
         ));
         botao.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
@@ -407,13 +407,13 @@ public class TabelaNominal extends JFrame {
     }
 
     private void estilizarBotaoCopiar(JButton botao) {
-        botao.setFont(new Font("Arial", Font.BOLD, 11));
+        botao.setFont(new Font("Arial", Font.BOLD, 10));
         botao.setBackground(COR_CINZA);
         botao.setForeground(COR_BOTAO_TEXTO);
         botao.setFocusPainted(false);
         botao.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(COR_CINZA.darker()),
-                BorderFactory.createEmptyBorder(4, 8, 4, 8)
+                BorderFactory.createEmptyBorder(2, 6, 2, 6)
         ));
         botao.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
