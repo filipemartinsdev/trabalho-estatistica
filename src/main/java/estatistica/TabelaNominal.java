@@ -765,32 +765,69 @@ public class TabelaNominal extends JFrame {
         dialog.setSize(400, 320);
         dialog.setLocationRelativeTo(this);
 
+
         String[] colunas = {"Dado", "Quantidade"};
-        Object[][] dados = new Object[5][2];
-        JTable tabela = new JTable(new javax.swing.table.DefaultTableModel(dados, colunas) {
+        javax.swing.table.DefaultTableModel model = new javax.swing.table.DefaultTableModel(null, colunas) {
             @Override
-            public boolean isCellEditable(int row, int column) { return true; }
+            public boolean isCellEditable(int row, int column) {
+                // Só permite editar as células de dados, não o botão de adicionar
+                return row < getRowCount() - 1;
+            }
             @Override
             public Class<?> getColumnClass(int columnIndex) {
                 return columnIndex == 1 ? Integer.class : String.class;
             }
-        });
+        };
+        model.addRow(new Object[]{"", 1});
+        model.addRow(new Object[]{"+", null}); // linha do botão de adicionar
+
+        JTable tabela = new JTable(model) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                // Só permite editar as células de dados, não o botão de adicionar
+                return row < getRowCount() - 1;
+            }
+        };
         tabela.setRowHeight(22);
         tabela.setFont(new Font("Arial", Font.PLAIN, 12));
         tabela.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
-        JScrollPane scroll = new JScrollPane(tabela);
 
-        JButton btnAddLinha = new JButton("Adicionar Linha");
-        btnAddLinha.setFont(new Font("Arial", Font.PLAIN, 11));
-        btnAddLinha.addActionListener(ev -> {
-            javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel) tabela.getModel();
-            model.addRow(new Object[]{"", 1});
+        // Renderizador para mostrar o botão '+' na última linha
+        tabela.setDefaultRenderer(Object.class, new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                if (row == table.getRowCount() - 1) {
+                    if (column == 0) {
+                        JButton btn = new JButton("+");
+                        btn.setFont(new Font("Arial", Font.BOLD, 14));
+                        btn.setFocusable(false);
+                        btn.setMargin(new Insets(0, 0, 0, 0));
+                        return btn;
+                    } else {
+                        return new JLabel("");
+                    }
+                }
+                return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            }
         });
+
+        // Listener para adicionar nova linha ao clicar no botão '+'
+        tabela.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int row = tabela.rowAtPoint(e.getPoint());
+                int col = tabela.columnAtPoint(e.getPoint());
+                if (row == tabela.getRowCount() - 1 && col == 0) {
+                    model.insertRow(model.getRowCount() - 1, new Object[]{"", 1});
+                }
+            }
+        });
+
+        JScrollPane scroll = new JScrollPane(tabela);
 
         JButton btnConfirmar = new JButton("Confirmar");
         btnConfirmar.setFont(new Font("Arial", Font.BOLD, 12));
         btnConfirmar.addActionListener(ev -> {
-            javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel) tabela.getModel();
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < model.getRowCount(); i++) {
                 Object dado = model.getValueAt(i, 0);
@@ -818,7 +855,6 @@ public class TabelaNominal extends JFrame {
         btnCancelar.addActionListener(ev -> dialog.dispose());
 
         JPanel painelBotoes = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        painelBotoes.add(btnAddLinha);
         painelBotoes.add(btnCancelar);
         painelBotoes.add(btnConfirmar);
 
