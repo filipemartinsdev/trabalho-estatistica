@@ -174,12 +174,19 @@ public class TabelaNominal extends JFrame {
         });
         // Popup de menu
         JPopupMenu popupMenu = new JPopupMenu();
-        JMenuItem itemExportar = new JMenuItem("Exportar");
-        itemExportar.addActionListener(ev -> copiarTabelaParaExcel());
         JMenuItem itemInserir = new JMenuItem("Inserir");
         itemInserir.addActionListener(ev -> abrirDialogInserir());
-        popupMenu.add(itemExportar);
+
+        JMenu menuExportar = new JMenu("Exportar");
+        JMenuItem itemCopiarTabela = new JMenuItem("Copiar tabela");
+        itemCopiarTabela.addActionListener(ev -> copiarTabelaParaExcel());
+        JMenuItem itemSalvarGrafico = new JMenuItem("Salvar gráfico");
+        itemSalvarGrafico.addActionListener(ev -> painelGrafico.exportarGrafico());
+        menuExportar.add(itemCopiarTabela);
+        menuExportar.add(itemSalvarGrafico);
+
         popupMenu.add(itemInserir);
+        popupMenu.add(menuExportar);
         btnMenu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 popupMenu.show(btnMenu, 0, btnMenu.getHeight());
