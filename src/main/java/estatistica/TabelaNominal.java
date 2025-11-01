@@ -386,20 +386,18 @@ public class TabelaNominal extends JFrame {
     }
 
     private void estilizarBotao(JButton botao, Color corFundo) {
-        botao.setFont(new Font("Arial", Font.BOLD, 12));
+        botao.setFont(new Font("Arial", Font.BOLD, 11));
         botao.setBackground(corFundo);
         botao.setForeground(COR_BOTAO_TEXTO);
         botao.setFocusPainted(false);
         botao.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(corFundo.darker()),
-                BorderFactory.createEmptyBorder(8, 15, 8, 15)
+                BorderFactory.createEmptyBorder(4, 8, 4, 8)
         ));
-
         botao.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 botao.setBackground(corFundo.darker());
             }
-
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 botao.setBackground(corFundo);
             }
@@ -407,20 +405,18 @@ public class TabelaNominal extends JFrame {
     }
 
     private void estilizarBotaoCopiar(JButton botao) {
-        botao.setFont(new Font("Arial", Font.BOLD, 12));
+        botao.setFont(new Font("Arial", Font.BOLD, 11));
         botao.setBackground(COR_CINZA);
         botao.setForeground(COR_BOTAO_TEXTO);
         botao.setFocusPainted(false);
         botao.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(COR_CINZA.darker()),
-                BorderFactory.createEmptyBorder(8, 15, 8, 15)
+                BorderFactory.createEmptyBorder(4, 8, 4, 8)
         ));
-
         botao.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 botao.setBackground(COR_CINZA.darker());
             }
-
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 botao.setBackground(COR_CINZA);
             }
