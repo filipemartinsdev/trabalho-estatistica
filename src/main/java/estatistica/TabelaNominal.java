@@ -117,7 +117,7 @@ public class TabelaNominal extends JFrame {
     }
 
     private void inicializarInterface() {
-        setTitle("Sistema de Análise Estatística - Tabela de Distribuição Nominal");
+        setTitle("Sistema de Análise Estatística");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
