@@ -39,9 +39,9 @@ Amostragem de resultados em tabela e gráfico de barras, além de possibilidade 
 
 ### To Do List
 - [x] Buildar JAR + Dependências
-- [ ] Buildar Arquivos Executáveis (linux/windows/mac)
+- [x] Buildar Arquivos Executáveis (linux/windows/mac)
 - [ ] Feature: Importação de tebelas (xls/xlsx/csv/ods)
-- [ ] Feature: Modo avançado para edição/inserção de dados
+- [x] Feature: Modo avançado para edição/inserção de dados
 
 ### ⚠️ Observação ⚠ 
 Código desenvolvido com suporte de **_Inteligência Artifical Generativa_**.
