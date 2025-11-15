@@ -29,13 +29,13 @@ Amostragem de resultados em tabela e gráfico de barras, além de possibilidade 
 
     1. `git clone https://github.com/filipemartinsdev/trabalho-estatistica.git`
     2. `cd trabalho-estatistica`
-    3. `./init.sh`
+    3. `./appLinux.sh`
 
 - Windows
 
     1. `git clone https://github.com/filipemartinsdev/trabalho-estatistica.git`
     2. `cd trabalho-estatistica`
-    3. `./init.bat`
+    3. `./appWindows.bat`
 
 ### To Do List
 - [x] Buildar JAR + Dependências
