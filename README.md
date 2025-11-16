@@ -40,7 +40,7 @@ Amostragem de resultados em tabela e gráfico de barras, além de possibilidade 
 ### To Do List
 - [x] Buildar JAR + Dependências
 - [x] Buildar Arquivos Executáveis (linux/windows/mac)
-- [ ] Feature: Importação de tebelas (xls/xlsx/csv/ods)
+- [x] Feature: Importação de tebelas (xls/xlsx/csv/ods)
 - [x] Feature: Modo avançado para edição/inserção de dados
 
 ### ⚠️ Observação ⚠ 
