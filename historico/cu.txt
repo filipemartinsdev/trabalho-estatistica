@@ -1,3 +1,0 @@
-Categoria,Freq. Abs.,Freq. Abs. Acm.,Freq. Rel.,Freq. Rel. Acm.,Freq. Rel. %,Freq. Rel. % Acm.
-cu,5,5,1,0000,1,0000,100,00%,100,00%
-TOTAL,5,5,1.0000,1.0000,100.00%,100.00%

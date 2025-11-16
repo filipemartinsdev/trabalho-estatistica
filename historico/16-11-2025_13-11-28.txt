@@ -1,4 +1,0 @@
-Categoria,Freq. Abs.,Freq. Abs. Acm.,Freq. Rel.,Freq. Rel. Acm.,Freq. Rel. %,Freq. Rel. % Acm.
-testeet,1,1,0,5000,0,5000,50,00%,50,00%
-testesest,1,2,0,5000,1,0000,50,00%,100,00%
-TOTAL,2,2,1.0000,1.0000,100.00%,100.00%

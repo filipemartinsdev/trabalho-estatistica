@@ -13,7 +13,6 @@ import java.io.*;
 import java.nio.file.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.List;
 
 public class TabelaNominal extends JFrame {
     // Split panes para controle dinâmico dos painéis
@@ -1133,38 +1132,9 @@ public class TabelaNominal extends JFrame {
             String caminhoArquivo = PASTA_HISTORICO + File.separator + nomeArquivo + ".txt";
             Path arquivo = Paths.get(caminhoArquivo);
 
-            // Preparar os dados para salvar
-            StringBuilder dados = new StringBuilder();
-            String[] categorias = tabelaFrequencia.getCategorias();
-            int[] valores = tabelaFrequencia.getValores();
-            int totalDados = tabelaFrequencia.getTotalDados();
-
-            // Cabeçalho
-            dados.append("Categoria,Freq. Abs.,Freq. Abs. Acm.,Freq. Rel.,Freq. Rel. Acm.,Freq. Rel. %,Freq. Rel. % Acm.\n");
-
-            // Dados
-            int freqAbsAcumulada = 0;
-            double freqRelDecimalAcum = 0.0;
-            for (int i = 0; i < categorias.length; i++) {
-                String categoria = categorias[i];
-                int freqAbs = valores[i];
-                freqAbsAcumulada += freqAbs;
-                double freqRelDecimal = (double) freqAbs / totalDados;
-                freqRelDecimalAcum += freqRelDecimal;
-                double freqRelPercentual = freqRelDecimal * 100.0;
-                double freqRelPercentualAcum = freqRelDecimalAcum * 100.0;
-
-                dados.append(String.format("%s,%d,%d,%.4f,%.4f,%.2f%%,%.2f%%\n",
-                        categoria, freqAbs, freqAbsAcumulada,
-                        freqRelDecimal, freqRelDecimalAcum,
-                        freqRelPercentual, freqRelPercentualAcum));
-            }
-
-            // Total
-            dados.append(String.format("TOTAL,%d,%d,1.0000,1.0000,100.00%%,100.00%%\n", totalDados, totalDados));
-
-            // Salvar arquivo
-            Files.write(arquivo, dados.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            // Salvar apenas os dados brutos da entrada de texto
+            String dadosEntrada = inputDados.getText();
+            Files.write(arquivo, dadosEntrada.getBytes(java.nio.charset.StandardCharsets.UTF_8));
 
             if (!salvarAutomatico) {
                 mostrarSucesso("Histórico salvo com sucesso em: " + caminhoArquivo);
@@ -1273,25 +1243,15 @@ public class TabelaNominal extends JFrame {
     private void carregarHistorico(String nomeArquivo) {
         try {
             Path arquivo = Paths.get(PASTA_HISTORICO, nomeArquivo);
-            List<String> linhas = Files.readAllLines(arquivo);
+            String conteudo = new String(Files.readAllBytes(arquivo), java.nio.charset.StandardCharsets.UTF_8);
 
-            if (linhas.isEmpty()) {
+            if (conteudo.trim().isEmpty()) {
                 mostrarErro("Arquivo de histórico vazio!");
                 return;
             }
 
-            // Extrair dados do arquivo CSV
-            StringBuilder dadosConstruidos = new StringBuilder();
-            for (int i = 1; i < linhas.size() - 1; i++) { // Pular cabeçalho e total
-                String linha = linhas.get(i);
-                String[] partes = linha.split(",");
-                if (partes.length > 0) {
-                    dadosConstruidos.append(partes[0]).append("\n");
-                }
-            }
-
-            // Carregar os dados no input
-            inputDados.setText(dadosConstruidos.toString().trim());
+            // Carregar os dados brutos no input
+            inputDados.setText(conteudo);
             mostrarSucesso("Histórico carregado com sucesso!");
 
             // Calcular a tabela automaticamente
