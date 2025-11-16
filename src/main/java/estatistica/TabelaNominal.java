@@ -49,7 +49,7 @@ public class TabelaNominal extends JFrame {
     private TabelaFrequencia tabelaFrequencia = new TabelaFrequencia();
 
     public static void main(String[] args) {
-        System.out.println("[OK] Calculadora com.estatistica - v2.0");
+        System.out.println("[OK] Calculadora estatistica - v2.0");
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -161,8 +161,23 @@ public class TabelaNominal extends JFrame {
         menuExportar.add(itemCopiarTabela);
         menuExportar.add(itemSalvarGrafico);
 
+        JMenu menuImportar = new JMenu("Importar");
+        JMenuItem itemImportarTabela = new JMenuItem("Tabela");
+        itemImportarTabela.addActionListener(ev -> importarTabela());
+        menuImportar.add(itemImportarTabela);
+
+        JMenuItem itemHistorico = new JMenuItem("Histórico");
+        itemHistorico.addActionListener(ev -> abrirHistorico());
+
+        JMenuItem itemAjuda = new JMenuItem("Ajuda");
+        itemAjuda.addActionListener(ev -> abrirAjuda());
+
         popupMenu.add(itemInserir);
         popupMenu.add(menuExportar);
+        popupMenu.add(menuImportar);
+        popupMenu.addSeparator();
+        popupMenu.add(itemHistorico);
+        popupMenu.add(itemAjuda);
         btnMenu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 popupMenu.show(btnMenu, 0, btnMenu.getHeight());
@@ -977,5 +992,23 @@ public class TabelaNominal extends JFrame {
         dialog.add(scroll, BorderLayout.CENTER);
         dialog.add(painelBotoes, BorderLayout.SOUTH);
         dialog.setVisible(true);
+    }
+
+    private void importarTabela() {
+        JOptionPane.showMessageDialog(this,
+                "Funcionalidade de importação em desenvolvimento",
+                "Importar Tabela", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void abrirHistorico() {
+        JOptionPane.showMessageDialog(this,
+                "Funcionalidade de histórico em desenvolvimento",
+                "Histórico", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void abrirAjuda() {
+        JOptionPane.showMessageDialog(this,
+                "Ajuda e documentação em desenvolvimento",
+                "Ajuda", JOptionPane.INFORMATION_MESSAGE);
     }
 }
