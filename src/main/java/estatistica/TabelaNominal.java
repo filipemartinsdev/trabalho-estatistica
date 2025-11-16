@@ -1035,6 +1035,8 @@ public class TabelaNominal extends JFrame {
         topoColar.setOpaque(false);
         JButton infoColar = new JButton("i");
         infoColar.setBackground(COR_CINZA);
+        infoColar.setForeground(COR_BOTAO_TEXTO);
+        infoColar.setOpaque(true);
         infoColar.setToolTipText("Formato esperado: cada linha 'Dado,quantidade'. Exemplo:\nexemplo,10");
         infoColar.setMargin(new Insets(2,6,2,6));
         infoColar.addActionListener(e -> JOptionPane.showMessageDialog(dialog,
@@ -1048,6 +1050,8 @@ public class TabelaNominal extends JFrame {
         JButton btnImportarColar = new JButton("Importar");
         JButton btnCancelar = new JButton("Cancelar");
         btnCancelar.setBackground(COR_CINZA);
+        btnCancelar.setForeground(COR_BOTAO_TEXTO);
+        btnCancelar.setOpaque(true);
         botoesColar.add(btnCancelar);
         botoesColar.add(btnImportarColar);
         painelColar.add(botoesColar, BorderLayout.SOUTH);
@@ -1062,6 +1066,9 @@ public class TabelaNominal extends JFrame {
         arquivoField.setEditable(false);
         JButton btnProcurar = new JButton("Procurar...");
         JButton infoArquivo = new JButton("i");
+        infoArquivo.setBackground(COR_CINZA);
+        infoArquivo.setForeground(COR_BOTAO_TEXTO);
+        infoArquivo.setOpaque(true);
         infoArquivo.setMargin(new Insets(2,6,2,6));
         infoArquivo.setToolTipText("Formatos suportados: CSV, TXT, XLSX e XLS (Excel requires POI dependency)");
         infoArquivo.addActionListener(e -> JOptionPane.showMessageDialog(dialog,
@@ -1104,7 +1111,7 @@ public class TabelaNominal extends JFrame {
         // Procurar arquivo
         btnProcurar.addActionListener(e -> {
             JFileChooser chooser = new JFileChooser();
-            FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV, TXT, XLSX, XLS", "csv", "txt", "xlsx", "xls");
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV, TXT, XLSX, XLS, ODS", "csv", "txt", "xlsx", "xls", "ods");
             chooser.setFileFilter(filter);
             if (chooser.showOpenDialog(dialog) == JFileChooser.APPROVE_OPTION) {
                 File f = chooser.getSelectedFile();
@@ -1115,6 +1122,8 @@ public class TabelaNominal extends JFrame {
                         preview = readCSVFile(f);
                     } else if (f.getName().toLowerCase().endsWith(".xls") || f.getName().toLowerCase().endsWith(".xlsx")) {
                         preview = readExcelFile(f);
+                    } else if (f.getName().toLowerCase().endsWith(".ods")) {
+                        preview = readODSFile(f);
                     } else {
                         JOptionPane.showMessageDialog(dialog, "Formato de arquivo não suportado.", "Erro", JOptionPane.ERROR_MESSAGE);
                         return;
@@ -1137,8 +1146,12 @@ public class TabelaNominal extends JFrame {
                 String conteudo;
                 if (f.getName().toLowerCase().endsWith(".csv") || f.getName().toLowerCase().endsWith(".txt")) {
                     conteudo = readCSVFile(f);
-                } else {
+                } else if (f.getName().toLowerCase().endsWith(".xls") || f.getName().toLowerCase().endsWith(".xlsx")) {
                     conteudo = readExcelFile(f);
+                } else if (f.getName().toLowerCase().endsWith(".ods")) {
+                    conteudo = readODSFile(f);
+                } else {
+                    conteudo = "";
                 }
                 if (parseAndSetImportedTable(conteudo)) {
                     dialog.dispose();
@@ -1205,9 +1218,9 @@ public class TabelaNominal extends JFrame {
                 return false;
             }
         }
-        // montar texto no formato esperado: elementos separados por vírgula
+        // montar texto no formato esperado: elementos separados por quebra de linha
         for (int i = 0; i < itens.size(); i++) {
-            if (i > 0) sb.append(", ");
+            if (i > 0) sb.append("\n");
             sb.append(itens.get(i));
         }
         inputDados.setText(sb.toString().trim());
@@ -1236,6 +1249,66 @@ public class TabelaNominal extends JFrame {
             }
             return sb.toString().trim();
         }
+    }
+
+    private String readODSFile(File f) throws Exception {
+        try (java.util.zip.ZipInputStream zis = new java.util.zip.ZipInputStream(new FileInputStream(f))) {
+            java.util.zip.ZipEntry entry;
+            StringBuilder xmlContent = new StringBuilder();
+            while ((entry = zis.getNextEntry()) != null) {
+                if (entry.getName().equals("content.xml")) {
+                    byte[] buffer = new byte[1024];
+                    int len;
+                    while ((len = zis.read(buffer)) > 0) {
+                        xmlContent.append(new String(buffer, 0, len, java.nio.charset.StandardCharsets.UTF_8));
+                    }
+                    break;
+                }
+            }
+            return parseODSContent(xmlContent.toString());
+        }
+    }
+
+    private String parseODSContent(String xml) {
+        StringBuilder sb = new StringBuilder();
+        try {
+            java.util.regex.Pattern rowPattern = java.util.regex.Pattern.compile("<table:table-row[^>]*>(.*?)</table:table-row>");
+            java.util.regex.Pattern cellPattern = java.util.regex.Pattern.compile("<table:table-cell[^>]*>(.*?)</table:table-cell>");
+            java.util.regex.Pattern textPattern = java.util.regex.Pattern.compile("<text:p[^>]*>(.*?)</text:p>");
+            
+            java.util.regex.Matcher rowMatcher = rowPattern.matcher(xml);
+            int rowCount = 0;
+            while (rowMatcher.find()) {
+                String rowContent = rowMatcher.group(1);
+                java.util.regex.Matcher cellMatcher = cellPattern.matcher(rowContent);
+                java.util.List<String> cells = new java.util.ArrayList<>();
+                while (cellMatcher.find()) {
+                    String cellContent = cellMatcher.group(1);
+                    java.util.regex.Matcher textMatcher = textPattern.matcher(cellContent);
+                    String cellText = "";
+                    if (textMatcher.find()) {
+                        cellText = textMatcher.group(1)
+                            .replaceAll("<[^>]+>", "")
+                            .replaceAll("&quot;", "\"")
+                            .replaceAll("&amp;", "&")
+                            .replaceAll("&lt;", "<")
+                            .replaceAll("&gt;", ">");
+                    }
+                    cells.add(cellText);
+                }
+                if (!cells.isEmpty() && (cells.size() > 1 || !cells.get(0).trim().isEmpty())) {
+                    if (rowCount > 0) sb.append("\n");
+                    for (int i = 0; i < Math.min(2, cells.size()); i++) {
+                        if (i > 0) sb.append(",");
+                        sb.append(cells.get(i).trim());
+                    }
+                    rowCount++;
+                }
+            }
+        } catch (Exception e) {
+            return "Erro ao ler ODS: " + e.getMessage();
+        }
+        return sb.toString().trim();
     }
 
     private String getCellString(Cell c) {
