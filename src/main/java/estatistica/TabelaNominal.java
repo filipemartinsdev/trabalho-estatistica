@@ -457,6 +457,7 @@ public class TabelaNominal extends JFrame {
         setLocationRelativeTo(null);
     }
 
+    
     private JPanel criarPainelEntrada() {
         JPanel painel = new JPanel(new BorderLayout());
         painel.setBackground(COR_FUNDO);
@@ -1114,8 +1115,13 @@ public class TabelaNominal extends JFrame {
                 "Digite o nome do arquivo de histórico (sem extensão):",
                 gerarTimestamp());
 
-        if (nomeArquivo != null && !nomeArquivo.trim().isEmpty()) {
-            salvarHistorico(nomeArquivo.trim());
+        if (nomeArquivo != null) {
+            nomeArquivo = nomeArquivo.trim();
+            if (nomeArquivo.isEmpty()) {
+                mostrarErro("Nome do arquivo não pode estar vazio!");
+                return;
+            }
+            salvarHistorico(nomeArquivo);
         }
     }
 
@@ -1187,27 +1193,36 @@ public class TabelaNominal extends JFrame {
         tabela.getTableHeader().setForeground(COR_TEXTO_CABECALHO);
         tabela.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
 
-        // Carregar arquivos do histórico em ordem decrescente
-        java.util.List<String> arquivos = new java.util.ArrayList<>();
+        // Carregar arquivos do histórico (mesclados) e ordenar por data de modificação decrescente
+        java.util.List<Path> arquivos = new java.util.ArrayList<>();
         try {
             Path pastaHistorico = Paths.get(PASTA_HISTORICO);
             if (Files.exists(pastaHistorico)) {
                 Files.list(pastaHistorico)
                         .filter(p -> p.toString().endsWith(".txt"))
-                        .map(p -> p.getFileName().toString())
-                        .sorted(java.util.Collections.reverseOrder())
+                        .sorted((p1, p2) -> {
+                            try {
+                                long t1 = Files.getLastModifiedTime(p1).toMillis();
+                                long t2 = Files.getLastModifiedTime(p2).toMillis();
+                                return Long.compare(t2, t1); // decrescente
+                            } catch (IOException ex) {
+                                return 0;
+                            }
+                        })
                         .forEach(arquivos::add);
             }
         } catch (IOException ex) {
             mostrarErro("Erro ao carregar histórico: " + ex.getMessage());
         }
 
-        // Função para atualizar a tabela
+        // Função para atualizar a tabela (exibir sem extensão)
         java.util.function.Consumer<String> atualizarTabela = filtro -> {
             modeloTabela.setRowCount(0);
-            for (String nomeArquivo : arquivos) {
-                if (filtro.isEmpty() || nomeArquivo.toLowerCase().contains(filtro.toLowerCase())) {
-                    modeloTabela.addRow(new Object[]{nomeArquivo, "Carregar", "Excluir"});
+            for (Path p : arquivos) {
+                String nomeComExt = p.getFileName().toString();
+                String nomeExibicao = nomeComExt.endsWith(".txt") ? nomeComExt.substring(0, nomeComExt.length() - 4) : nomeComExt;
+                if (filtro == null || filtro.isEmpty() || nomeExibicao.toLowerCase().contains(filtro.toLowerCase())) {
+                    modeloTabela.addRow(new Object[]{nomeExibicao, "Carregar", "Excluir"});
                 }
             }
         };
@@ -1261,21 +1276,36 @@ public class TabelaNominal extends JFrame {
                 int col = tabela.columnAtPoint(e.getPoint());
                 int row = tabela.rowAtPoint(e.getPoint());
                 if (row >= 0) {
-                    String nomeArquivo = (String) modeloTabela.getValueAt(row, 0);
+                    String nomeExibicao = (String) modeloTabela.getValueAt(row, 0);
+                    // Encontrar o Path correspondente (com extensão)
+                    Path escolhido = null;
+                    for (Path p : arquivos) {
+                        String nomeComExt = p.getFileName().toString();
+                        String nomeSemExt = nomeComExt.endsWith(".txt") ? nomeComExt.substring(0, nomeComExt.length() - 4) : nomeComExt;
+                        if (nomeSemExt.equals(nomeExibicao)) {
+                            escolhido = p;
+                            break;
+                        }
+                    }
+                    if (escolhido == null) {
+                        // fallback: criar Path com .txt
+                        escolhido = Paths.get(PASTA_HISTORICO, nomeExibicao + ".txt");
+                    }
+
                     if (col == 1) {
                         // Carregar
-                        carregarHistorico(nomeArquivo);
+                        carregarHistorico(escolhido.getFileName().toString());
                         dialogVerHistorico.dispose();
                     } else if (col == 2) {
                         // Excluir
                         int resposta = JOptionPane.showConfirmDialog(dialogVerHistorico,
-                                "Tem certeza que deseja excluir o arquivo:\n" + nomeArquivo + "?",
+                                "Tem certeza que deseja excluir o arquivo:\n" + nomeExibicao + "?",
                                 "Confirmar Exclusão",
                                 JOptionPane.YES_NO_OPTION,
                                 JOptionPane.WARNING_MESSAGE);
                         if (resposta == JOptionPane.YES_OPTION) {
-                            excluirHistorico(nomeArquivo);
-                            arquivos.remove(nomeArquivo);
+                            excluirHistorico(escolhido.getFileName().toString());
+                            arquivos.remove(escolhido);
                             atualizarTabela.accept(campoPesquisa.getText());
                         }
                     }
