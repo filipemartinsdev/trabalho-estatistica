@@ -1147,7 +1147,7 @@ public class TabelaNominal extends JFrame {
     private void abrirVerHistorico(JDialog dialogAnterior) {
         JDialog dialogVerHistorico = new JDialog(this, "Ver Histórico", true);
         dialogVerHistorico.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        dialogVerHistorico.setSize(600, 400);
+        dialogVerHistorico.setSize(700, 450);
         dialogVerHistorico.setLocationRelativeTo(dialogAnterior);
 
         // Painel principal
@@ -1155,8 +1155,22 @@ public class TabelaNominal extends JFrame {
         painelPrincipal.setBackground(COR_PAINEL);
         painelPrincipal.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
+        // Painel de pesquisa
+        JPanel painelPesquisa = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        painelPesquisa.setOpaque(false);
+        
+        JLabel labelPesquisa = new JLabel("🔍 Pesquisar:");
+        labelPesquisa.setFont(new Font("Arial", Font.PLAIN, 12));
+        painelPesquisa.add(labelPesquisa);
+        
+        JTextField campoPesquisa = new JTextField(25);
+        campoPesquisa.setFont(new Font("Arial", Font.PLAIN, 12));
+        painelPesquisa.add(campoPesquisa);
+
+        painelPrincipal.add(painelPesquisa, BorderLayout.NORTH);
+
         // Criar tabela
-        String[] colunas = {"Nome do Arquivo", "Ação"};
+        String[] colunas = {"Nome do Arquivo", "Carregar", "Excluir"};
         DefaultTableModel modeloTabela = new DefaultTableModel(colunas, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -1173,26 +1187,46 @@ public class TabelaNominal extends JFrame {
         tabela.getTableHeader().setForeground(COR_TEXTO_CABECALHO);
         tabela.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
 
-        // Carregar arquivos do histórico
+        // Carregar arquivos do histórico em ordem decrescente
+        java.util.List<String> arquivos = new java.util.ArrayList<>();
         try {
             Path pastaHistorico = Paths.get(PASTA_HISTORICO);
             if (Files.exists(pastaHistorico)) {
                 Files.list(pastaHistorico)
                         .filter(p -> p.toString().endsWith(".txt"))
-                        .sorted()
-                        .forEach(arquivo -> {
-                            String nomeArquivo = arquivo.getFileName().toString();
-                            modeloTabela.addRow(new Object[]{nomeArquivo, "Carregar"});
-                        });
+                        .map(p -> p.getFileName().toString())
+                        .sorted(java.util.Collections.reverseOrder())
+                        .forEach(arquivos::add);
             }
         } catch (IOException ex) {
             mostrarErro("Erro ao carregar histórico: " + ex.getMessage());
         }
 
-        // Configurar coluna de ação com botões
-        javax.swing.table.TableColumn colunaBotao = tabela.getColumnModel().getColumn(1);
-        colunaBotao.setMaxWidth(100);
-        colunaBotao.setCellRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+        // Função para atualizar a tabela
+        java.util.function.Consumer<String> atualizarTabela = filtro -> {
+            modeloTabela.setRowCount(0);
+            for (String nomeArquivo : arquivos) {
+                if (filtro.isEmpty() || nomeArquivo.toLowerCase().contains(filtro.toLowerCase())) {
+                    modeloTabela.addRow(new Object[]{nomeArquivo, "Carregar", "Excluir"});
+                }
+            }
+        };
+
+        // Carregar todos os arquivos na tabela
+        atualizarTabela.accept("");
+
+        // Listener para pesquisa em tempo real
+        campoPesquisa.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyReleased(java.awt.event.KeyEvent e) {
+                atualizarTabela.accept(campoPesquisa.getText());
+            }
+        });
+
+        // Configurar colunas de ação com botões
+        javax.swing.table.TableColumn colunaCarregar = tabela.getColumnModel().getColumn(1);
+        colunaCarregar.setMaxWidth(80);
+        colunaCarregar.setCellRenderer(new javax.swing.table.DefaultTableCellRenderer() {
             @Override
             public java.awt.Component getTableCellRendererComponent(JTable table, Object value,
                     boolean isSelected, boolean hasFocus, int row, int column) {
@@ -1200,6 +1234,22 @@ public class TabelaNominal extends JFrame {
                 btn.setBackground(COR_BOTAO);
                 btn.setForeground(COR_BOTAO_TEXTO);
                 btn.setFocusPainted(false);
+                btn.setFont(new Font("Arial", Font.PLAIN, 10));
+                return btn;
+            }
+        });
+
+        javax.swing.table.TableColumn colunaExcluir = tabela.getColumnModel().getColumn(2);
+        colunaExcluir.setMaxWidth(80);
+        colunaExcluir.setCellRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public java.awt.Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                JButton btn = new JButton("Excluir");
+                btn.setBackground(COR_VERMELHO);
+                btn.setForeground(COR_BOTAO_TEXTO);
+                btn.setFocusPainted(false);
+                btn.setFont(new Font("Arial", Font.PLAIN, 10));
                 return btn;
             }
         });
@@ -1210,10 +1260,25 @@ public class TabelaNominal extends JFrame {
             public void mouseClicked(MouseEvent e) {
                 int col = tabela.columnAtPoint(e.getPoint());
                 int row = tabela.rowAtPoint(e.getPoint());
-                if (col == 1 && row >= 0) {
+                if (row >= 0) {
                     String nomeArquivo = (String) modeloTabela.getValueAt(row, 0);
-                    carregarHistorico(nomeArquivo);
-                    dialogVerHistorico.dispose();
+                    if (col == 1) {
+                        // Carregar
+                        carregarHistorico(nomeArquivo);
+                        dialogVerHistorico.dispose();
+                    } else if (col == 2) {
+                        // Excluir
+                        int resposta = JOptionPane.showConfirmDialog(dialogVerHistorico,
+                                "Tem certeza que deseja excluir o arquivo:\n" + nomeArquivo + "?",
+                                "Confirmar Exclusão",
+                                JOptionPane.YES_NO_OPTION,
+                                JOptionPane.WARNING_MESSAGE);
+                        if (resposta == JOptionPane.YES_OPTION) {
+                            excluirHistorico(nomeArquivo);
+                            arquivos.remove(nomeArquivo);
+                            atualizarTabela.accept(campoPesquisa.getText());
+                        }
+                    }
                 }
             }
         });
@@ -1258,6 +1323,16 @@ public class TabelaNominal extends JFrame {
             calcularTabela();
         } catch (IOException ex) {
             mostrarErro("Erro ao carregar histórico: " + ex.getMessage());
+        }
+    }
+
+    private void excluirHistorico(String nomeArquivo) {
+        try {
+            Path arquivo = Paths.get(PASTA_HISTORICO, nomeArquivo);
+            Files.delete(arquivo);
+            mostrarSucesso("Arquivo '" + nomeArquivo + "' excluído com sucesso!");
+        } catch (IOException ex) {
+            mostrarErro("Erro ao excluir histórico: " + ex.getMessage());
         }
     }
 
