@@ -1,0 +1,5 @@
+Ensino Médio, Ensino Superior, Ensino Médio, Ensino Fundamental,
+Ensino Superior, Ensino Médio, Pós-Graduação, Ensino Superior,
+Ensino Médio, Ensino Fundamental, Ensino Superior, Ensino Médio,
+Pós-Graduação, Ensino Superior, Ensino Médio, Ensino Superior,
+Ensino Fundamental, Ensino Médio, Ensino Superior, Ensino Médio
