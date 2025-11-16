@@ -348,10 +348,6 @@ public class TabelaNominal extends JFrame {
         checkOrdenar = new JCheckBox("Ordenar por Frequência", false);
         estilizarCheckbox(checkOrdenar);
         painelDireita.add(checkOrdenar);
-        checkSalvarAutomatico = new JCheckBox("Salvar Automaticamente", false);
-        estilizarCheckbox(checkSalvarAutomatico);
-        checkSalvarAutomatico.addActionListener(e -> salvarAutomatico = checkSalvarAutomatico.isSelected());
-        painelDireita.add(checkSalvarAutomatico);
         btnCalcular = new JButton("📊 Calcular");
         estilizarBotao(btnCalcular);
         btnCalcular.addActionListener(new ActionListener() {
