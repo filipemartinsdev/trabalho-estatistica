@@ -1031,7 +1031,7 @@ public class TabelaNominal extends JFrame {
         JPanel painelBotoesTop = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
         painelBotoesTop.setOpaque(false);
 
-        JButton btnSalvar = new JButton("💾 Salvar");
+        JButton btnSalvar = new JButton("Salvar");
         btnSalvar.setFont(new Font("Arial", Font.PLAIN, 12));
         btnSalvar.setBackground(COR_BOTAO);
         btnSalvar.setForeground(COR_BOTAO_TEXTO);
@@ -1039,9 +1039,9 @@ public class TabelaNominal extends JFrame {
         btnSalvar.addActionListener(e -> salvarHistoricoManual());
         painelBotoesTop.add(btnSalvar);
 
-        JButton btnVerHistorico = new JButton("📋 Ver Histórico");
+        JButton btnVerHistorico = new JButton("Ver Histórico");
         btnVerHistorico.setFont(new Font("Arial", Font.PLAIN, 12));
-        btnVerHistorico.setBackground(COR_BOTAO);
+        btnVerHistorico.setBackground(COR_CINZA);
         btnVerHistorico.setForeground(COR_BOTAO_TEXTO);
         btnVerHistorico.setFocusPainted(false);
         btnVerHistorico.addActionListener(e -> abrirVerHistorico(dialogHistorico));
@@ -1070,14 +1070,13 @@ public class TabelaNominal extends JFrame {
         textInfo.setLineWrap(true);
         textInfo.setWrapStyleWord(true);
         textInfo.setText(
-            "Salvar: Salva um snapshot dos dados calculados com nome customizável.\n" +
+            "Salvar: Salva um snapshot dos dados calculados.\n" +
             "\n" +
             "Ver Histórico: Lista todos os salvamentos anteriores com opção de carregar.\n" +
             "\n" +
             "Salvar Automaticamente: Quando ativado, cada cálculo é automaticamente" +
-            " salvo no histórico com timestamp como nome do arquivo.\n" +
-            "\n" +
-            "Os arquivos são salvos em: historico/"
+            " salvo no histórico.\n" +
+            "\n"
         );
         painelInfo.add(new JScrollPane(textInfo), BorderLayout.CENTER);
 
@@ -1139,7 +1138,7 @@ public class TabelaNominal extends JFrame {
             Files.write(arquivo, dadosEntrada.getBytes(java.nio.charset.StandardCharsets.UTF_8));
 
             if (!salvarAutomatico) {
-                mostrarSucesso("Histórico salvo com sucesso em: " + caminhoArquivo);
+                mostrarSucesso("Histórico salvo com sucesso!");
             }
         } catch (IOException ex) {
             mostrarErro("Erro ao salvar histórico: " + ex.getMessage());
