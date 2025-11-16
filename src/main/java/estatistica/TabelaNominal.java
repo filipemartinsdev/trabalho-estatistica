@@ -13,6 +13,13 @@ import java.io.*;
 import java.nio.file.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 
 public class TabelaNominal extends JFrame {
     // Split panes para controle dinâmico dos painéis
@@ -1011,9 +1018,234 @@ public class TabelaNominal extends JFrame {
     }
 
     private void importarTabela() {
-        JOptionPane.showMessageDialog(this,
-                "Funcionalidade de importação em desenvolvimento",
-                "Importar Tabela", JOptionPane.INFORMATION_MESSAGE);
+        JDialog dialog = new JDialog(this, "Importar Tabela", true);
+        dialog.setSize(700, 420);
+        dialog.setLocationRelativeTo(this);
+
+        JTabbedPane abas = new JTabbedPane();
+
+        // Aba Colar
+        JPanel painelColar = new JPanel(new BorderLayout(8, 8));
+        JTextArea areaColar = new JTextArea();
+        areaColar.setLineWrap(false);
+        areaColar.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        painelColar.add(new JScrollPane(areaColar), BorderLayout.CENTER);
+
+        JPanel topoColar = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        topoColar.setOpaque(false);
+        JButton infoColar = new JButton("i");
+        infoColar.setBackground(COR_CINZA);
+        infoColar.setToolTipText("Formato esperado: cada linha 'Dado,quantidade'. Exemplo:\nexemplo,10");
+        infoColar.setMargin(new Insets(2,6,2,6));
+        infoColar.addActionListener(e -> JOptionPane.showMessageDialog(dialog,
+                "Cole aqui a tabela no formato:\n\nDado, quantidade\nexemplo, 10\nexemplo2, 20\n\nSeparador: vírgula (',') ou tab.",
+                "Formato da tabela (colar)", JOptionPane.INFORMATION_MESSAGE));
+        topoColar.add(new JLabel("Cole a tabela"));
+        topoColar.add(infoColar);
+        painelColar.add(topoColar, BorderLayout.NORTH);
+
+        JPanel botoesColar = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton btnImportarColar = new JButton("Importar");
+        JButton btnCancelar = new JButton("Cancelar");
+        btnCancelar.setBackground(COR_CINZA);
+        botoesColar.add(btnCancelar);
+        botoesColar.add(btnImportarColar);
+        painelColar.add(botoesColar, BorderLayout.SOUTH);
+
+        abas.add("Colar", painelColar);
+
+        // Aba Arquivo
+        JPanel painelArquivo = new JPanel(new BorderLayout(8,8));
+        JPanel painelEscolha = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        painelEscolha.setOpaque(false);
+        JTextField arquivoField = new JTextField(36);
+        arquivoField.setEditable(false);
+        JButton btnProcurar = new JButton("Procurar...");
+        JButton infoArquivo = new JButton("i");
+        infoArquivo.setMargin(new Insets(2,6,2,6));
+        infoArquivo.setToolTipText("Formatos suportados: CSV, TXT, XLSX e XLS (Excel requires POI dependency)");
+        infoArquivo.addActionListener(e -> JOptionPane.showMessageDialog(dialog,
+                "Arquivos suportados:\n- CSV / TXT: separador ',' ou tab\n- Excel: .xlsx e .xls (Requer Apache POI, já incluído se o build suportar)",
+                "Formatos de arquivo", JOptionPane.INFORMATION_MESSAGE));
+        painelEscolha.add(new JLabel("Arquivo:"));
+        painelEscolha.add(arquivoField);
+        painelEscolha.add(btnProcurar);
+        painelEscolha.add(infoArquivo);
+        painelArquivo.add(painelEscolha, BorderLayout.NORTH);
+
+        JTextArea areaArquivoPreview = new JTextArea();
+        areaArquivoPreview.setEditable(false);
+        areaArquivoPreview.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        painelArquivo.add(new JScrollPane(areaArquivoPreview), BorderLayout.CENTER);
+
+        JPanel botoesArquivo = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton btnImportarArquivo = new JButton("Importar");
+        botoesArquivo.add(btnImportarArquivo);
+        painelArquivo.add(botoesArquivo, BorderLayout.SOUTH);
+
+        abas.add("Arquivo", painelArquivo);
+
+        // Ações
+        btnCancelar.addActionListener(e -> dialog.dispose());
+
+        btnImportarColar.addActionListener(e -> {
+            String texto = areaColar.getText();
+            if (texto == null || texto.trim().isEmpty()) {
+                JOptionPane.showMessageDialog(dialog, "Cole a tabela antes de importar.", "Erro", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (parseAndSetImportedTable(texto)) {
+                dialog.dispose();
+            }
+        });
+
+        // botão 'Importar e Calcular' removido por redundância; apenas 'Importar' permanece
+
+        // Procurar arquivo
+        btnProcurar.addActionListener(e -> {
+            JFileChooser chooser = new JFileChooser();
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV, TXT, XLSX, XLS", "csv", "txt", "xlsx", "xls");
+            chooser.setFileFilter(filter);
+            if (chooser.showOpenDialog(dialog) == JFileChooser.APPROVE_OPTION) {
+                File f = chooser.getSelectedFile();
+                arquivoField.setText(f.getAbsolutePath());
+                try {
+                    String preview = "";
+                    if (f.getName().toLowerCase().endsWith(".csv") || f.getName().toLowerCase().endsWith(".txt")) {
+                        preview = readCSVFile(f);
+                    } else if (f.getName().toLowerCase().endsWith(".xls") || f.getName().toLowerCase().endsWith(".xlsx")) {
+                        preview = readExcelFile(f);
+                    } else {
+                        JOptionPane.showMessageDialog(dialog, "Formato de arquivo não suportado.", "Erro", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    areaArquivoPreview.setText(preview);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(dialog, "Erro ao ler arquivo: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        btnImportarArquivo.addActionListener(e -> {
+            String caminho = arquivoField.getText();
+            if (caminho == null || caminho.isEmpty()) {
+                JOptionPane.showMessageDialog(dialog, "Escolha um arquivo primeiro.", "Erro", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            try {
+                File f = new File(caminho);
+                String conteudo;
+                if (f.getName().toLowerCase().endsWith(".csv") || f.getName().toLowerCase().endsWith(".txt")) {
+                    conteudo = readCSVFile(f);
+                } else {
+                    conteudo = readExcelFile(f);
+                }
+                if (parseAndSetImportedTable(conteudo)) {
+                    dialog.dispose();
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(dialog, "Erro ao importar: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        // botão 'Importar e Calcular' removido por redundância; apenas 'Importar' permanece
+
+        dialog.setLayout(new BorderLayout());
+        dialog.add(abas, BorderLayout.CENTER);
+        dialog.setVisible(true);
+    }
+
+    private boolean parseAndSetImportedTable(String texto) {
+        String[] linhas = texto.split("\r?\n");
+        StringBuilder sb = new StringBuilder();
+        boolean primeiro = true;
+        boolean temHeader = false;
+        // detectar header: se primeira linha segunda coluna não é número, assumimos header
+        for (String linha : linhas) {
+            if (linha == null) continue;
+            if (!linha.trim().isEmpty()) {
+                String[] partes = linha.split("[\t,;]");
+                if (partes.length < 2) continue;
+                String seg = partes[1].trim();
+                if (primeiro) {
+                    primeiro = false;
+                    try {
+                        Integer.parseInt(seg.replaceAll("\\.0$", ""));
+                    } catch (Exception ex) {
+                        temHeader = true;
+                    }
+                }
+            }
+        }
+        java.util.List<String> itens = new ArrayList<>();
+        for (int i = 0; i < linhas.length; i++) {
+            String linha = linhas[i].trim();
+            if (linha.isEmpty()) continue;
+            if (i == 0 && temHeader) continue;
+            String[] partes = linha.split("[\t,;]");
+            if (partes.length < 2) {
+                JOptionPane.showMessageDialog(this, "Linha inválida: '" + linha + "'\nFormato esperado: Dado,quantidade", "Erro", JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+            String cat = partes[0].trim();
+            String qtdStr = partes[1].trim();
+            try {
+                String qtdNormalized = qtdStr.replaceAll("\\.0$", "").replace(',', '.');
+                double val = Double.parseDouble(qtdNormalized);
+                int count = (int) Math.round(val);
+                if (count < 0) {
+                    JOptionPane.showMessageDialog(this, "Quantidade negativa na linha: '" + linha + "'", "Erro", JOptionPane.ERROR_MESSAGE);
+                    return false;
+                }
+                for (int k = 0; k < count; k++) {
+                    itens.add(cat);
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Valor de quantidade inválido na linha: '" + linha + "'", "Erro", JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+        }
+        // montar texto no formato esperado: elementos separados por vírgula
+        for (int i = 0; i < itens.size(); i++) {
+            if (i > 0) sb.append(", ");
+            sb.append(itens.get(i));
+        }
+        inputDados.setText(sb.toString().trim());
+        return true;
+    }
+
+    private String readCSVFile(File f) throws IOException {
+        java.util.List<String> lines = java.nio.file.Files.readAllLines(f.toPath(), java.nio.charset.StandardCharsets.UTF_8);
+        return String.join("\n", lines);
+    }
+
+    private String readExcelFile(File f) throws Exception {
+        try (java.io.InputStream is = new java.io.FileInputStream(f)) {
+            Workbook wb = WorkbookFactory.create(is);
+            Sheet sheet = wb.getNumberOfSheets() > 0 ? wb.getSheetAt(0) : null;
+            if (sheet == null) return "";
+            StringBuilder sb = new StringBuilder();
+            for (Row row : sheet) {
+                Cell c0 = row.getCell(0);
+                Cell c1 = row.getCell(1);
+                if (c0 == null) continue;
+                String s0 = getCellString(c0);
+                String s1 = c1 == null ? "" : getCellString(c1);
+                if (s0.trim().isEmpty() && s1.trim().isEmpty()) continue;
+                sb.append(s0.trim()).append(",").append(s1.trim()).append("\n");
+            }
+            return sb.toString().trim();
+        }
+    }
+
+    private String getCellString(Cell c) {
+        switch (c.getCellType()) {
+            case STRING: return c.getStringCellValue();
+            case NUMERIC: return Double.toString(c.getNumericCellValue());
+            case BOOLEAN: return Boolean.toString(c.getBooleanCellValue());
+            case FORMULA: try { return c.getStringCellValue(); } catch (Exception ex) { return Double.toString(c.getNumericCellValue()); }
+            default: return "";
+        }
     }
 
     private void abrirHistorico() {
