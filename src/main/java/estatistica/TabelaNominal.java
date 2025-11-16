@@ -4,11 +4,16 @@ package estatistica;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
+import java.io.*;
+import java.nio.file.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.List;
 
 public class TabelaNominal extends JFrame {
     // Split panes para controle dinâmico dos painéis
@@ -44,7 +49,10 @@ public class TabelaNominal extends JFrame {
     private JTextField descricaoXField;
     private JButton btnCalcular, btnLimpar, btnExemplo, btnGeraGrafico;
     private JCheckBox checkOrdenar;
+    private JCheckBox checkSalvarAutomatico;
     private boolean tabelaCalculada = false;
+    private boolean salvarAutomatico = false;
+    private static final String PASTA_HISTORICO = "historico";
 
     private TabelaFrequencia tabelaFrequencia = new TabelaFrequencia();
 
@@ -172,12 +180,16 @@ public class TabelaNominal extends JFrame {
         JMenuItem itemAjuda = new JMenuItem("Ajuda");
         itemAjuda.addActionListener(ev -> abrirAjuda());
 
+        JMenuItem itemCreditos = new JMenuItem("❤ Créditos");
+        itemCreditos.addActionListener(ev -> abrirCreditos());
+
         popupMenu.add(itemInserir);
         popupMenu.add(menuExportar);
         popupMenu.add(menuImportar);
         popupMenu.addSeparator();
         popupMenu.add(itemHistorico);
         popupMenu.add(itemAjuda);
+        popupMenu.add(itemCreditos);
         btnMenu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 popupMenu.show(btnMenu, 0, btnMenu.getHeight());
@@ -331,12 +343,16 @@ public class TabelaNominal extends JFrame {
         painelEsquerda.add(btnGeraGrafico);
         painelSuperior.add(painelEsquerda, BorderLayout.CENTER);
 
-        // Painel direita (checkbox primeiro, depois botões)
+        // Painel direita (checkboxes e botões)
         JPanel painelDireita = new JPanel(new FlowLayout(FlowLayout.RIGHT, 2, 2));
         painelDireita.setOpaque(false);
         checkOrdenar = new JCheckBox("Ordenar por Frequência", false);
         estilizarCheckbox(checkOrdenar);
         painelDireita.add(checkOrdenar);
+        checkSalvarAutomatico = new JCheckBox("Salvar Automaticamente", false);
+        estilizarCheckbox(checkSalvarAutomatico);
+        checkSalvarAutomatico.addActionListener(e -> salvarAutomatico = checkSalvarAutomatico.isSelected());
+        painelDireita.add(checkSalvarAutomatico);
         btnCalcular = new JButton("📊 Calcular");
         estilizarBotao(btnCalcular);
         btnCalcular.addActionListener(new ActionListener() {
@@ -607,6 +623,10 @@ public class TabelaNominal extends JFrame {
             } else {
                 painelGrafico.limparGrafico();
                 painelGrafico.repaint();
+            }
+            // Salvar automaticamente se ativado
+            if (salvarAutomatico) {
+                salvarHistoricoAutomatico();
             }
         } catch (Exception ex) {
             mostrarErro("Erro no processamento: " + ex.getMessage());
@@ -1001,14 +1021,364 @@ public class TabelaNominal extends JFrame {
     }
 
     private void abrirHistorico() {
-        JOptionPane.showMessageDialog(this,
-                "Funcionalidade de histórico em desenvolvimento",
-                "Histórico", JOptionPane.INFORMATION_MESSAGE);
+        JDialog dialogHistorico = new JDialog(this, "Histórico de Cálculos", true);
+        dialogHistorico.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dialogHistorico.setSize(600, 400);
+        dialogHistorico.setLocationRelativeTo(this);
+
+        // Painel principal
+        JPanel painelPrincipal = new JPanel(new BorderLayout(10, 10));
+        painelPrincipal.setBackground(COR_PAINEL);
+        painelPrincipal.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        // Painel de botões superior
+        JPanel painelBotoesTop = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        painelBotoesTop.setOpaque(false);
+
+        JButton btnSalvar = new JButton("💾 Salvar");
+        btnSalvar.setFont(new Font("Arial", Font.PLAIN, 12));
+        btnSalvar.setBackground(COR_BOTAO);
+        btnSalvar.setForeground(COR_BOTAO_TEXTO);
+        btnSalvar.setFocusPainted(false);
+        btnSalvar.addActionListener(e -> salvarHistoricoManual());
+        painelBotoesTop.add(btnSalvar);
+
+        JButton btnVerHistorico = new JButton("📋 Ver Histórico");
+        btnVerHistorico.setFont(new Font("Arial", Font.PLAIN, 12));
+        btnVerHistorico.setBackground(COR_BOTAO);
+        btnVerHistorico.setForeground(COR_BOTAO_TEXTO);
+        btnVerHistorico.setFocusPainted(false);
+        btnVerHistorico.addActionListener(e -> abrirVerHistorico(dialogHistorico));
+        painelBotoesTop.add(btnVerHistorico);
+
+        JCheckBox checkAuto = new JCheckBox("Salvar Automaticamente");
+        checkAuto.setSelected(salvarAutomatico);
+        checkAuto.addActionListener(e -> {
+            salvarAutomatico = checkAuto.isSelected();
+            checkSalvarAutomatico.setSelected(salvarAutomatico);
+        });
+        painelBotoesTop.add(checkAuto);
+
+        painelPrincipal.add(painelBotoesTop, BorderLayout.NORTH);
+
+        // Painel de informações
+        JPanel painelInfo = new JPanel(new BorderLayout(10, 10));
+        painelInfo.setBackground(COR_PAINEL);
+        painelInfo.setBorder(BorderFactory.createTitledBorder("Informações"));
+
+        JTextArea textInfo = new JTextArea();
+        textInfo.setFont(new Font("Arial", Font.PLAIN, 11));
+        textInfo.setForeground(COR_TEXTO);
+        textInfo.setBackground(COR_PAINEL);
+        textInfo.setEditable(false);
+        textInfo.setLineWrap(true);
+        textInfo.setWrapStyleWord(true);
+        textInfo.setText(
+            "Salvar: Salva um snapshot dos dados calculados com nome customizável.\n" +
+            "\n" +
+            "Ver Histórico: Lista todos os salvamentos anteriores com opção de carregar.\n" +
+            "\n" +
+            "Salvar Automaticamente: Quando ativado, cada cálculo é automaticamente" +
+            " salvo no histórico com timestamp como nome do arquivo.\n" +
+            "\n" +
+            "Os arquivos são salvos em: historico/"
+        );
+        painelInfo.add(new JScrollPane(textInfo), BorderLayout.CENTER);
+
+        painelPrincipal.add(painelInfo, BorderLayout.CENTER);
+
+        // Painel de botões inferior
+        JPanel painelBotoesBottom = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        painelBotoesBottom.setOpaque(false);
+        
+        JButton btnFechar = new JButton("Fechar");
+        btnFechar.setFont(new Font("Arial", Font.PLAIN, 12));
+        btnFechar.setBackground(COR_CINZA);
+        btnFechar.setForeground(COR_BOTAO_TEXTO);
+        btnFechar.setFocusPainted(false);
+        btnFechar.addActionListener(e -> dialogHistorico.dispose());
+        painelBotoesBottom.add(btnFechar);
+
+        painelPrincipal.add(painelBotoesBottom, BorderLayout.SOUTH);
+
+        dialogHistorico.add(painelPrincipal);
+        dialogHistorico.setVisible(true);
+    }
+
+    private void salvarHistoricoManual() {
+        if (!tabelaCalculada) {
+            mostrarErro("Primeiro calcule uma tabela para poder salvar no histórico!");
+            return;
+        }
+
+        String nomeArquivo = JOptionPane.showInputDialog(this,
+                "Digite o nome do arquivo de histórico (sem extensão):",
+                gerarTimestamp());
+
+        if (nomeArquivo != null && !nomeArquivo.trim().isEmpty()) {
+            salvarHistorico(nomeArquivo.trim());
+        }
+    }
+
+    private void salvarHistoricoAutomatico() {
+        salvarHistorico(gerarTimestamp());
+    }
+
+    private void salvarHistorico(String nomeArquivo) {
+        try {
+            // Criar pasta de histórico se não existir
+            Files.createDirectories(Paths.get(PASTA_HISTORICO));
+
+            // Preparar o caminho do arquivo
+            String caminhoArquivo = PASTA_HISTORICO + File.separator + nomeArquivo + ".txt";
+            Path arquivo = Paths.get(caminhoArquivo);
+
+            // Preparar os dados para salvar
+            StringBuilder dados = new StringBuilder();
+            String[] categorias = tabelaFrequencia.getCategorias();
+            int[] valores = tabelaFrequencia.getValores();
+            int totalDados = tabelaFrequencia.getTotalDados();
+
+            // Cabeçalho
+            dados.append("Categoria,Freq. Abs.,Freq. Abs. Acm.,Freq. Rel.,Freq. Rel. Acm.,Freq. Rel. %,Freq. Rel. % Acm.\n");
+
+            // Dados
+            int freqAbsAcumulada = 0;
+            double freqRelDecimalAcum = 0.0;
+            for (int i = 0; i < categorias.length; i++) {
+                String categoria = categorias[i];
+                int freqAbs = valores[i];
+                freqAbsAcumulada += freqAbs;
+                double freqRelDecimal = (double) freqAbs / totalDados;
+                freqRelDecimalAcum += freqRelDecimal;
+                double freqRelPercentual = freqRelDecimal * 100.0;
+                double freqRelPercentualAcum = freqRelDecimalAcum * 100.0;
+
+                dados.append(String.format("%s,%d,%d,%.4f,%.4f,%.2f%%,%.2f%%\n",
+                        categoria, freqAbs, freqAbsAcumulada,
+                        freqRelDecimal, freqRelDecimalAcum,
+                        freqRelPercentual, freqRelPercentualAcum));
+            }
+
+            // Total
+            dados.append(String.format("TOTAL,%d,%d,1.0000,1.0000,100.00%%,100.00%%\n", totalDados, totalDados));
+
+            // Salvar arquivo
+            Files.write(arquivo, dados.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+
+            if (!salvarAutomatico) {
+                mostrarSucesso("Histórico salvo com sucesso em: " + caminhoArquivo);
+            }
+        } catch (IOException ex) {
+            mostrarErro("Erro ao salvar histórico: " + ex.getMessage());
+        }
+    }
+
+    private void abrirVerHistorico(JDialog dialogAnterior) {
+        JDialog dialogVerHistorico = new JDialog(this, "Ver Histórico", true);
+        dialogVerHistorico.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dialogVerHistorico.setSize(600, 400);
+        dialogVerHistorico.setLocationRelativeTo(dialogAnterior);
+
+        // Painel principal
+        JPanel painelPrincipal = new JPanel(new BorderLayout(10, 10));
+        painelPrincipal.setBackground(COR_PAINEL);
+        painelPrincipal.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        // Criar tabela
+        String[] colunas = {"Nome do Arquivo", "Ação"};
+        DefaultTableModel modeloTabela = new DefaultTableModel(colunas, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        JTable tabela = new JTable(modeloTabela);
+        tabela.setFont(new Font("Arial", Font.PLAIN, 11));
+        tabela.setRowHeight(25);
+        tabela.setBackground(COR_PAINEL);
+        tabela.setForeground(COR_TEXTO);
+        tabela.getTableHeader().setBackground(COR_CABECALHO_TABELA);
+        tabela.getTableHeader().setForeground(COR_TEXTO_CABECALHO);
+        tabela.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
+
+        // Carregar arquivos do histórico
+        try {
+            Path pastaHistorico = Paths.get(PASTA_HISTORICO);
+            if (Files.exists(pastaHistorico)) {
+                Files.list(pastaHistorico)
+                        .filter(p -> p.toString().endsWith(".txt"))
+                        .sorted()
+                        .forEach(arquivo -> {
+                            String nomeArquivo = arquivo.getFileName().toString();
+                            modeloTabela.addRow(new Object[]{nomeArquivo, "Carregar"});
+                        });
+            }
+        } catch (IOException ex) {
+            mostrarErro("Erro ao carregar histórico: " + ex.getMessage());
+        }
+
+        // Configurar coluna de ação com botões
+        javax.swing.table.TableColumn colunaBotao = tabela.getColumnModel().getColumn(1);
+        colunaBotao.setMaxWidth(100);
+        colunaBotao.setCellRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public java.awt.Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                JButton btn = new JButton("Carregar");
+                btn.setBackground(COR_BOTAO);
+                btn.setForeground(COR_BOTAO_TEXTO);
+                btn.setFocusPainted(false);
+                return btn;
+            }
+        });
+
+        // Adicionar listener para clique nos botões
+        tabela.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int col = tabela.columnAtPoint(e.getPoint());
+                int row = tabela.rowAtPoint(e.getPoint());
+                if (col == 1 && row >= 0) {
+                    String nomeArquivo = (String) modeloTabela.getValueAt(row, 0);
+                    carregarHistorico(nomeArquivo);
+                    dialogVerHistorico.dispose();
+                }
+            }
+        });
+
+        JScrollPane scroll = new JScrollPane(tabela);
+        scroll.setBorder(BorderFactory.createLineBorder(COR_BORDA));
+        painelPrincipal.add(scroll, BorderLayout.CENTER);
+
+        // Painel de botões
+        JPanel painelBotoes = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        painelBotoes.setOpaque(false);
+
+        JButton btnFechar = new JButton("Fechar");
+        btnFechar.setFont(new Font("Arial", Font.PLAIN, 12));
+        btnFechar.setBackground(COR_CINZA);
+        btnFechar.setForeground(COR_BOTAO_TEXTO);
+        btnFechar.setFocusPainted(false);
+        btnFechar.addActionListener(e -> dialogVerHistorico.dispose());
+        painelBotoes.add(btnFechar);
+
+        painelPrincipal.add(painelBotoes, BorderLayout.SOUTH);
+
+        dialogVerHistorico.add(painelPrincipal);
+        dialogVerHistorico.setVisible(true);
+    }
+
+    private void carregarHistorico(String nomeArquivo) {
+        try {
+            Path arquivo = Paths.get(PASTA_HISTORICO, nomeArquivo);
+            List<String> linhas = Files.readAllLines(arquivo);
+
+            if (linhas.isEmpty()) {
+                mostrarErro("Arquivo de histórico vazio!");
+                return;
+            }
+
+            // Extrair dados do arquivo CSV
+            StringBuilder dadosConstruidos = new StringBuilder();
+            for (int i = 1; i < linhas.size() - 1; i++) { // Pular cabeçalho e total
+                String linha = linhas.get(i);
+                String[] partes = linha.split(",");
+                if (partes.length > 0) {
+                    dadosConstruidos.append(partes[0]).append("\n");
+                }
+            }
+
+            // Carregar os dados no input
+            inputDados.setText(dadosConstruidos.toString().trim());
+            mostrarSucesso("Histórico carregado com sucesso!");
+
+            // Calcular a tabela automaticamente
+            calcularTabela();
+        } catch (IOException ex) {
+            mostrarErro("Erro ao carregar histórico: " + ex.getMessage());
+        }
+    }
+
+    private String gerarTimestamp() {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss");
+        return sdf.format(new Date());
+    }
+
+    private void mostrarSucesso(String mensagem) {
+        JOptionPane.showMessageDialog(this, mensagem, "Sucesso", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void abrirAjuda() {
         JOptionPane.showMessageDialog(this,
                 "Ajuda e documentação em desenvolvimento",
                 "Ajuda", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void abrirCreditos() {
+        JDialog dialogCreditos = new JDialog(this, "Créditos", true);
+        dialogCreditos.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dialogCreditos.setSize(400, 450);
+        dialogCreditos.setLocationRelativeTo(this);
+        dialogCreditos.setResizable(false);
+
+        // Painel principal
+        JPanel painelPrincipal = new JPanel();
+        painelPrincipal.setBackground(COR_PAINEL);
+        painelPrincipal.setLayout(new BorderLayout(10, 10));
+        painelPrincipal.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        // Título
+        JLabel labelTitulo = new JLabel("❤ Desenvolvido por");
+        labelTitulo.setFont(new Font("Arial", Font.BOLD, 16));
+        labelTitulo.setForeground(COR_TEXTO);
+        labelTitulo.setHorizontalAlignment(SwingConstants.CENTER);
+
+        // Área de texto com os nomes
+        JTextArea textCreditos = new JTextArea();
+        textCreditos.setFont(new Font("Arial", Font.PLAIN, 12));
+        textCreditos.setForeground(COR_TEXTO);
+        textCreditos.setBackground(COR_PAINEL);
+        textCreditos.setEditable(false);
+        textCreditos.setLineWrap(true);
+        textCreditos.setWrapStyleWord(true);
+        textCreditos.setText(
+                "Filipe Martins Andrade\n" +
+                "Thiago da Silva Monteiro\n" +
+                "Victor Hugo Alves Vaz\n" +
+                "Mikael Theovaldo Silva Carvalho\n" +
+                "João Paulo Borges Lima\n\n" +
+                "Italo Gabriel Batista do Nascimento\n" +
+                "Lucas Juliano de Almeida\n" +
+                "Cauã Paulino Ferreira Dionis Cabral\n" +
+                "Karina Eduarda Silveira da Costa\n" +
+                "Pedro Henrique Araújo Lima"
+        );
+
+        // ScrollPane para a área de texto
+        JScrollPane scroll = new JScrollPane(textCreditos);
+        scroll.setBorder(BorderFactory.createLineBorder(COR_BORDA));
+        scroll.setOpaque(false);
+
+        // Painel de botões
+        JPanel painelBotoes = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        painelBotoes.setOpaque(false);
+        
+        JButton btnFechar = new JButton("Fechar");
+        btnFechar.setFont(new Font("Arial", Font.PLAIN, 12));
+        btnFechar.setBackground(COR_BOTAO);
+        btnFechar.setForeground(COR_BOTAO_TEXTO);
+        btnFechar.setFocusPainted(false);
+        btnFechar.addActionListener(e -> dialogCreditos.dispose());
+        painelBotoes.add(btnFechar);
+
+        // Adicionar componentes ao painel principal
+        painelPrincipal.add(labelTitulo, BorderLayout.NORTH);
+        painelPrincipal.add(scroll, BorderLayout.CENTER);
+        painelPrincipal.add(painelBotoes, BorderLayout.SOUTH);
+
+        dialogCreditos.add(painelPrincipal);
+        dialogCreditos.setVisible(true);
     }
 }
